@@ -1,6 +1,6 @@
 # Core requirements
 
-Draft v0.1, 2026-10-01. Written in [EARS](https://en.wikipedia.org/wiki/Easy_Approach_to_Requirements_Syntax)
+Draft v0.1, 2026-10-01. Written in [EARS](https://alistairmavin.com/ears/)
 form (sentence templates such as "When X, the formatter shall Y"). **No tests exist yet**, so every test anchor below is
 planned; a requirement stays a draft until its anchor is a real, passing test.
 

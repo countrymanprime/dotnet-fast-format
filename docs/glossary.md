@@ -6,7 +6,7 @@ Terms used across these docs, each with a link to its source definition.
 |---|---|---|
 | **ADR** | Architecture Decision Record: a short file recording one significant decision, its context and consequences | [adr.github.io](https://adr.github.io/) |
 | **MADR** | Markdown Architectural Decision Records: the ADR template this repo uses in [`decisions/`](decisions/README.md) | [adr.github.io/madr](https://adr.github.io/madr/) |
-| **EARS** | Easy Approach to Requirements Syntax: sentence templates ("When X, the formatter shall Y") that make requirements testable; used in [`requirements/`](requirements/core.md) | [Wikipedia](https://en.wikipedia.org/wiki/Easy_Approach_to_Requirements_Syntax) |
+| **EARS** | Easy Approach to Requirements Syntax: sentence templates ("When X, the formatter shall Y") that make requirements testable; used in [`requirements/`](requirements/core.md) | [alistairmavin.com/ears](https://alistairmavin.com/ears/) (by its creator) |
 | **Roslyn** | The .NET compiler platform; this project uses only its C# syntax-tree parsing | [dotnet/roslyn](https://github.com/dotnet/roslyn) |
 | **Syntax tree** | The parsed structure of a source file, including comments and whitespace as trivia | [Roslyn syntax analysis](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/get-started/syntax-analysis) |
 | **Trivia** | Whitespace, comments and preprocessor directives attached to tokens in a Roslyn syntax tree | [Roslyn syntax analysis](https://learn.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/get-started/syntax-analysis) |
