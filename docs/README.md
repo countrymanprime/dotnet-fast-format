@@ -7,6 +7,7 @@
 | [TASKS.md](TASKS.md) | What gets built, in what order? |
 | [architecture.md](architecture.md) | How will it be structured? (planned design) |
 | [decisions/](decisions/README.md) | Why was each major choice made? |
+| [glossary.md](glossary.md) | What do terms like MADR, EARS and doc-printer mean, and where are they defined? |
 
 ## How the documents relate
 

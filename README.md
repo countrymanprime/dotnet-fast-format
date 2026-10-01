@@ -1,7 +1,9 @@
 # dotnet-fast-format
 
-A fast C# formatter that reads the `.editorconfig` you already have. It parses with Roslyn syntax
-trees, needs no MSBuild project load, and prints through its own doc-printer.
+A fast C# formatter that reads the [`.editorconfig`](https://editorconfig.org/) you already have.
+It parses with [Roslyn](https://github.com/dotnet/roslyn) syntax trees, needs no MSBuild project
+load, and prints through its own [doc-printer](https://github.com/prettier/prettier/blob/main/commands.md).
+Unfamiliar terms are defined in the [glossary](docs/glossary.md).
 
 > **Status: pre-code.** This repository currently holds the plan: product requirements, design
 > and decisions. There is nothing to install yet. See [`docs/TASKS.md`](docs/TASKS.md) for what

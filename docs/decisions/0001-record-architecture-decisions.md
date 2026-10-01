@@ -18,7 +18,7 @@ is written with AI assistance and each session starts without memory of earlier 
 
 ## Considered options
 
-1. MADR-style ADRs in `docs/decisions/`
+1. [MADR](https://adr.github.io/madr/)-style [ADRs](https://adr.github.io/) in `docs/decisions/`
 2. Decisions only in the PRD and commit messages
 3. No formal record
 

@@ -7,8 +7,8 @@
 ## Summary
 
 `dotnet-fast-format` is a command-line C# formatter for developers and CI. It formats a solution
-in a fraction of the time `dotnet format` needs because it parses files with Roslyn and never loads
-an MSBuild project. Unlike CSharpier, it takes its style from the `.editorconfig` a team already
+in a fraction of the time `dotnet format` needs because it parses files with [Roslyn](https://github.com/dotnet/roslyn) and never loads
+an MSBuild project. Unlike CSharpier, it takes its style from the [`.editorconfig`](https://editorconfig.org/) a team already
 maintains instead of asking them to adopt one fixed style. It must never change what the code
 does, and running it twice must give the same result as running it once.
 

@@ -1,6 +1,7 @@
 # Core requirements
 
-Draft v0.1, 2026-10-01. Written in EARS form. **No tests exist yet**, so every test anchor below is
+Draft v0.1, 2026-10-01. Written in [EARS](https://en.wikipedia.org/wiki/Easy_Approach_to_Requirements_Syntax)
+form (sentence templates such as "When X, the formatter shall Y"). **No tests exist yet**, so every test anchor below is
 planned; a requirement stays a draft until its anchor is a real, passing test.
 
 Priority: Must / Should / Could. IDs are stable and never reused.

@@ -52,7 +52,9 @@ Formatting must never change program meaning. Every change is checked against th
 
 - Write the failing test or golden fixture first, then the code.
 - Docs ship in the same change as the code (`dotnet-docs-sync`).
-- Commits follow Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `perf:`, `ci:`).
+- Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+  (`feat:`, `fix:`, `docs:`, `test:`, `perf:`, `ci:`). Terms used in these docs are defined in
+  [`docs/glossary.md`](docs/glossary.md).
 
 ## Skills in `.claude/skills/`
 
