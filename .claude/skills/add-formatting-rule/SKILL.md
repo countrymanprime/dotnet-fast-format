@@ -70,4 +70,4 @@ the default and the configured value.
 - [ ] Corpus diff reviewed and explained
 - [ ] Style-changelog entry if stable output changed
 - [ ] Docs, XML comments and ADR updated (`dotnet-docs-sync`)
-- [ ] The full verify gate from `AGENTS.md` passes
+- [ ] The full gate (`dotnet test`, see `AGENTS.md`) passes

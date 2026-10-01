@@ -39,6 +39,14 @@ can format without also checking the invariants.
 6. **Later:** fuzzing by mutating fixtures (removing or adding line breaks, truncating files) and
    asserting the invariants still hold or the failure is clean.
 
+## The gate is `dotnet test`
+
+Layers 1 to 3 are ordinary tests (Verify for snapshots), so one `dotnet test` run is the whole
+correctness gate and CI needs a single step. Layer 3 needs a fetch step for the pinned corpus
+(for example a git submodule or a download fixture that checks the recorded SHA). Layers 4 to 6
+(revision diff, benchmarks, fuzzing) are slower or noisier and run as separate, scheduled or
+opt-in jobs. Once CI exists, require the `dotnet test` check on `main` so merges cannot bypass it.
+
 ## Snapshot triage
 
 When a snapshot test fails:

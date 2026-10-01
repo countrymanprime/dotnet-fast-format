@@ -14,10 +14,18 @@ exist yet. Replace each with the real command when the script lands, and delete 
 | Restore + build | `dotnet build -warnaserror` *(planned)* |
 | All tests | `dotnet test` *(planned)* |
 | One test | `dotnet test --filter "FullyQualifiedName~<name>"` *(planned)* |
-| Full gate (what CI runs) | `./build.ps1 verify` *(planned)*: build, format check, tests, invariants |
+| Full gate (what CI runs) | `dotnet test` *(planned)* |
+
+`dotnet test` is the whole gate. Golden snapshots (Verify), the invariants and the corpus run
+are all tests, and `TreatWarningsAsErrors` in `Directory.Build.props` makes warnings fail the
+build. There is no separate verify script. Benchmarks live in their own project and are not part
+of the gate.
 
 Run the full gate before saying a task is done. If a test was filtered out or a count looks
 wrong, say so; do not report green on tests that did not run.
+
+**Merging:** once CI exists, `main` is protected with the `dotnet test` check required, so
+nothing reaches `main` with a failing rule. Until then, run the gate locally before every PR.
 
 ## Non-negotiable invariants
 
