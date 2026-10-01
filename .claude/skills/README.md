@@ -15,6 +15,18 @@ Mermaid diagrams, ADRs, the repo doc set, and keeping all of it in sync as code 
 `dotnet-docs-sync` is the one to use day to day. It hands off to the other four, and the skills
 refer to each other by name, so **install all five together**.
 
+## Project skills for this repo
+
+Three more skills are specific to building a code formatter with an AI agent. They are not part
+of the five above and are not meant to be copied to other repos. They are backed by
+[`AGENTS.md`](../../AGENTS.md) at the repo root.
+
+| Skill | Use it to | Triggers on |
+| --- | --- | --- |
+| [`prd-and-requirements`](prd-and-requirements/SKILL.md) | Write the PRD, EARS requirements with test anchors, and vertical-slice tasks | Starting a project or milestone, "write a PRD", vague feature requests |
+| [`formatter-verification`](formatter-verification/SKILL.md) | Run and interpret idempotency, tree-equivalence, corpus, snapshot and perf checks | Any formatter change, failing snapshot or invariant, before declaring done |
+| [`add-formatting-rule`](add-formatting-rule/SKILL.md) | Follow the fixture-first procedure to add or change how a construct is printed | New node kind or `.editorconfig` rule, a bug report on formatted output |
+
 ## Install
 
 These skills live in this repo under `.claude/skills/`, so they already work here. To use them in
