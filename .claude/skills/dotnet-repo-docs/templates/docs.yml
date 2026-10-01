@@ -1,0 +1,94 @@
+# Documentation checks for a .NET repository.
+# Copy to .github/workflows/docs.yml. Before committing, check each action's releases page
+# for its current major version. The versions below were current in September 2026.
+name: Docs
+
+on:
+  pull_request:
+  push:
+    branches: [main]            # set to the repo's default branch
+  schedule:
+    - cron: "0 6 * * 1"         # weekly: catches external links that rot without a code change
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  markdown:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Reads globs, ignores, and rules from .markdownlint-cli2.jsonc at the repo root.
+      - uses: DavidAnson/markdownlint-cli2-action@v24
+
+  links:
+    name: Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Pull requests check relative links only (--offline), so an unrelated site outage can't
+      # block a PR. Pushes, the weekly schedule, and manual runs also check external URLs.
+      # Put regexes of URLs to skip in .lycheeignore.
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress --max-retries 3
+            ${{ github.event_name == 'pull_request' && '--offline' || '' }}
+            './**/*.md'
+          fail: true
+
+  mermaid:
+    name: Mermaid diagrams
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Render every Mermaid block
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(git ls-files -z '*.md' | xargs -0 -r grep -l '^```mermaid' || true)
+          if [ ${#files[@]} -eq 0 ]; then echo "No Mermaid diagrams found."; exit 0; fi
+          npm install --no-save --no-audit --no-fund --prefix "$RUNNER_TEMP/mmdc" @mermaid-js/mermaid-cli@12
+          mmdc="$RUNNER_TEMP/mmdc/node_modules/.bin/mmdc"
+          echo '{"args":["--no-sandbox"]}' > "$RUNNER_TEMP/puppeteer.json"
+          mkdir -p "$RUNNER_TEMP/mermaid-out"   # mmdc does not create it
+          status=0
+          for f in "${files[@]}"; do
+            echo "Checking $f"
+            if ! "$mmdc" -q -p "$RUNNER_TEMP/puppeteer.json" -i "$f" -o "$RUNNER_TEMP/mermaid-out/$(echo "$f" | tr '/' '_')"; then
+              echo "::error file=$f::Mermaid diagram failed to render"
+              status=1
+            fi
+          done
+          exit $status
+
+  # Enable if the repo publishes an API site with DocFX (docs/docfx.json and docfx in dotnet-tools.json).
+  # api-docs:
+  #   name: DocFX build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: actions/setup-dotnet@v6
+  #       with:
+  #         global-json-file: global.json   # or: dotnet-version: "8.0.x"
+  #     - run: dotnet tool restore
+  #     - run: dotnet docfx docs/docfx.json --warningsAsErrors
+
+  # Enable if the repo uses MarkdownSnippets (mdsnippets.json and MarkdownSnippets.Tool in dotnet-tools.json).
+  # snippets:
+  #   name: Snippets in sync
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: actions/setup-dotnet@v6
+  #       with:
+  #         global-json-file: global.json
+  #     - run: dotnet tool restore
+  #     - run: dotnet mdsnippets
+  #     - name: Fail if docs are out of date
+  #       run: git diff --exit-code -- '*.md' || { echo "::error::Run 'dotnet mdsnippets' and commit the result."; exit 1; }
