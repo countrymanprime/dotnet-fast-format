@@ -23,7 +23,7 @@ of the five above and are not meant to be copied to other repos. They are backed
 
 | Skill | Use it to | Triggers on |
 | --- | --- | --- |
-| [`prd-and-requirements`](prd-and-requirements/SKILL.md) | Write the PRD, EARS requirements with test anchors, and vertical-slice tasks | Starting a project or milestone, "write a PRD", vague feature requests |
+| [`prd-and-requirements`](prd-and-requirements/SKILL.md) | Write the product PRD, per-feature specs, EARS requirements with test anchors, and vertical-slice tasks | Starting a project or milestone, "write a PRD", vague feature requests |
 | [`formatter-verification`](formatter-verification/SKILL.md) | Run and interpret idempotency, tree-equivalence, corpus, snapshot and perf checks | Any formatter change, failing snapshot or invariant, before declaring done |
 | [`add-formatting-rule`](add-formatting-rule/SKILL.md) | Follow the fixture-first procedure to add or change how a construct is printed | New node kind or `.editorconfig` rule, a bug report on formatted output |
 
