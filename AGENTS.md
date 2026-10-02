@@ -11,7 +11,7 @@ exist yet. Replace each with the real command when the script lands, and delete 
 
 | Task | Command |
 |---|---|
-| Restore + build | `dotnet build -warnaserror` *(planned)* |
+| Restore + build | `dotnet build -warnaserror` |
 | All tests | `dotnet test` *(planned)* |
 | One test | `dotnet test --filter "FullyQualifiedName~<name>"` *(planned)* |
 | Full gate (what CI runs) | `dotnet test` *(planned)* |

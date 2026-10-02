@@ -13,7 +13,7 @@ Nothing formats yet. The goal is a harness where every later change is checked a
 
 | ID | Task | Requirements | Acceptance | Verify |
 |---|---|---|---|---|
-| T-001 | Create the solution, `global.json`, `Directory.Build.props` (nullable, warnings as errors) and `Directory.Packages.props` | none | Empty solution builds clean | `dotnet build` *(planned)* |
+| T-001 | Create the solution, `global.json`, `Directory.Build.props` (nullable, warnings as errors) and `Directory.Packages.props` | none | Solution builds clean (an empty solution cannot build, so it holds the empty `Core` project) | `dotnet build -warnaserror` (done) |
 | T-002 | CLI project skeleton: `dotnet fast-format --help` and exit codes | CLI-003 | Help prints; bad args exit 2 | `dotnet test --filter "FullyQualifiedName~Cli"` *(planned)* |
 | T-003 | Test project with [Verify](https://github.com/VerifyTests/Verify) and the shared invariant helper (idempotent, tree-preserving, no-loss, valid output) | FMT-001, FMT-002, FMT-003, FMT-005 | Helper fails on a deliberately broken formatter | `dotnet test --filter "FullyQualifiedName~Invariants"` *(planned)* |
 | T-004 | CI workflow running `dotnet test` on Windows and Linux; then require it on `main` | all | Required check on the Pull Request ruleset | PR shows the check *(planned)* |
