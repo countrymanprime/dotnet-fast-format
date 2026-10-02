@@ -4,17 +4,17 @@
 syntax trees (no MSBuild), prints through its own doc-printer, and aims to replace
 `dotnet format`'s whitespace/style pass.
 
-**Status: pre-code.** The repo has docs and skills only. Commands marked *(planned)* do not
-exist yet. Replace each with the real command when the script lands, and delete this note.
+**Status: foundations (M0).** The solution, test harness and invariant helper exist; there is no
+formatter yet (the tests use an identity formatter). Core and the CLI land in later milestones.
 
 ## Commands
 
 | Task | Command |
 |---|---|
 | Restore + build | `dotnet build -warnaserror` |
-| All tests | `dotnet test` *(planned)* |
-| One test | `dotnet test --filter "FullyQualifiedName~<name>"` *(planned)* |
-| Full gate (what CI runs) | `dotnet test` *(planned)* |
+| All tests | `dotnet test` |
+| One test | `dotnet test --filter "FullyQualifiedName~<name>"` |
+| Full gate (what CI runs) | `dotnet test` |
 
 `dotnet test` is the whole gate. Golden snapshots (Verify), the invariants and the corpus run
 are all tests, and `TreatWarningsAsErrors` in `Directory.Build.props` makes warnings fail the
