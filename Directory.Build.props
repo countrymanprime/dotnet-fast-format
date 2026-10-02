@@ -9,6 +9,10 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
+  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
+    <!-- Public API is documented; StyleCop's XML rules and CS1591 then enforce it. Tests are exempt. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
   <PropertyGroup>
     <!-- Verify's maintenance-fee check: declared as a non-revenue open source project.
          The exemption is time-bounded (max 12 months); renew it or sponsor before it lapses. -->

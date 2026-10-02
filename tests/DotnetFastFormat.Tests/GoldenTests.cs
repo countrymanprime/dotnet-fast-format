@@ -13,7 +13,7 @@ public class GoldenTests
     public static TheoryData<string> Fixtures()
     {
         var data = new TheoryData<string>();
-        foreach (string path in Directory.EnumerateFiles(Root, "*.in.cs", SearchOption.AllDirectories).Order())
+        foreach (string path in Directory.EnumerateFiles(Root, "*.in.cs", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
         {
             data.Add(Path.GetRelativePath(Root, path).Replace('\\', '/'));
         }

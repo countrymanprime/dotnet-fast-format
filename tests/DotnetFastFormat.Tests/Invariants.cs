@@ -4,29 +4,6 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace DotnetFastFormat.Tests;
 
-/// <summary>The formatter invariants from <c>AGENTS.md</c>, in the order they are checked.</summary>
-public enum Invariant
-{
-    /// <summary>The output parses with no diagnostics the input did not have.</summary>
-    ValidOutput,
-
-    /// <summary>The output has the same tokens as the input, ignoring trivia.</summary>
-    TreePreserving,
-
-    /// <summary>Every comment and directive survives, in place relative to the code.</summary>
-    NoLoss,
-
-    /// <summary>Formatting the output again gives the same text.</summary>
-    Idempotent,
-}
-
-/// <summary>Thrown when a formatter breaks an invariant.</summary>
-public sealed class InvariantViolationException(Invariant invariant, string message) : Exception(message)
-{
-    /// <summary>The invariant that was broken.</summary>
-    public Invariant Invariant { get; } = invariant;
-}
-
 /// <summary>
 /// The single assertion every test layer calls, so no test can format without also checking the
 /// invariants (see the <c>formatter-verification</c> skill).
@@ -48,7 +25,7 @@ public static class Invariants
         CheckNoLoss(input, result);
 
         string second = formatter.Format(output);
-        if (second != output)
+        if (!string.Equals(second, output, StringComparison.Ordinal))
         {
             throw new InvariantViolationException(Invariant.Idempotent, "Formatting the output again changed it.");
         }
@@ -71,14 +48,14 @@ public static class Invariants
     private static Dictionary<string, int> CountErrors(SyntaxTree tree) =>
         tree.GetDiagnostics()
             .Where(d => d.Severity == DiagnosticSeverity.Error)
-            .GroupBy(d => d.Id)
-            .ToDictionary(g => g.Key, g => g.Count());
+            .GroupBy(d => d.Id, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
 
     private static void CheckTreePreserving(SyntaxTree input, SyntaxTree output)
     {
         List<string> expected = Tokens(input).ToList();
         List<string> actual = Tokens(output).ToList();
-        if (!expected.SequenceEqual(actual))
+        if (!expected.SequenceEqual(actual, StringComparer.Ordinal))
         {
             throw new InvariantViolationException(Invariant.TreePreserving, "Output tokens differ from input tokens.");
         }
@@ -88,7 +65,7 @@ public static class Invariants
     {
         List<string> expected = CodeAndComments(input).ToList();
         List<string> actual = CodeAndComments(output).ToList();
-        if (!expected.SequenceEqual(actual))
+        if (!expected.SequenceEqual(actual, StringComparer.Ordinal))
         {
             throw new InvariantViolationException(
                 Invariant.NoLoss, "A comment or directive was dropped, changed or moved across code.");

@@ -5,14 +5,6 @@ namespace DotnetFastFormat.Tests;
 
 public class CliTests
 {
-    private static (int Code, string Out, string Err) Run(params string[] args)
-    {
-        var output = new StringWriter();
-        var error = new StringWriter();
-        int code = CliApp.Run(args, output, error);
-        return (code, output.ToString(), error.ToString());
-    }
-
     [Fact]
     public void HelpPrintsUsageAndExitsZero()
     {
@@ -21,7 +13,7 @@ public class CliTests
         Assert.Equal(0, code);
         Assert.Contains("C# formatter", output, StringComparison.Ordinal);
         Assert.Contains("Usage:", output, StringComparison.Ordinal);
-        Assert.Equal("", error);
+        Assert.Equal(string.Empty, error);
     }
 
     [Fact]
@@ -39,7 +31,7 @@ public class CliTests
         var (code, output, error) = Run("--no-such-option");
 
         Assert.Equal(2, code);
-        Assert.Equal("", output);
+        Assert.Equal(string.Empty, output);
         Assert.Contains("--no-such-option", error, StringComparison.Ordinal);
     }
 
@@ -49,7 +41,7 @@ public class CliTests
         var (code, output, error) = Run("some/file.cs");
 
         Assert.Equal(2, code);
-        Assert.Equal("", output);
+        Assert.Equal(string.Empty, output);
         Assert.Contains("not implemented", error, StringComparison.OrdinalIgnoreCase);
     }
 
@@ -73,6 +65,14 @@ public class CliTests
         Assert.Contains("dotnet-fast-format", helpOutput, StringComparison.Ordinal);
     }
 
+    private static (int Code, string Out, string Err) Run(params string[] args)
+    {
+        var output = new StringWriter();
+        var error = new StringWriter();
+        int code = CliApp.Run(args, output, error);
+        return (code, output.ToString(), error.ToString());
+    }
+
     private static (int Code, string Out, string Err) RunProcess(string arg)
     {
         string dll = Path.Combine(AppContext.BaseDirectory, "dotnet-fast-format.dll");
@@ -80,6 +80,7 @@ public class CliTests
         {
             RedirectStandardError = true,
             RedirectStandardOutput = true,
+            UseShellExecute = false,
         })!;
         string output = process.StandardOutput.ReadToEnd();
         string error = process.StandardError.ReadToEnd();

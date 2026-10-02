@@ -16,10 +16,12 @@ formatter yet (the tests use an identity formatter) and the CLI is a skeleton: `
 | All tests | `dotnet test` |
 | One test | `dotnet test --filter "FullyQualifiedName~<name>"` |
 | Full gate (what CI runs) | `dotnet test` |
+| Style check (second CI job) | `dotnet format DotnetFastFormat.slnx --verify-no-changes` |
+| Fix style | `dotnet format DotnetFastFormat.slnx` |
 
 `dotnet test` is the whole gate. Golden snapshots (Verify), the invariants and the corpus run
 are all tests, and `TreatWarningsAsErrors` in `Directory.Build.props` makes warnings fail the
-build. There is no separate verify script. Benchmarks live in their own project and are not part
+build, including the StyleCop and Meziantou analyzers ([ADR 0004](docs/decisions/0004-enforce-style-with-analyzers-and-dotnet-format.md)). There is no separate verify script. Benchmarks live in their own project and are not part
 of the gate.
 
 Run the full gate before saying a task is done. If a test was filtered out or a count looks

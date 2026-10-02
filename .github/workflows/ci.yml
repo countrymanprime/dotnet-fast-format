@@ -22,8 +22,8 @@ env:
 
 jobs:
   test:
-    # This job name is what the `main` ruleset requires: "dotnet test (ubuntu-latest)" and
-    # "dotnet test (windows-latest)".
+    # The `main` ruleset requires: "dotnet test (ubuntu-latest)", "dotnet test (windows-latest)"
+    # and "dotnet format".
     name: dotnet test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
@@ -38,3 +38,16 @@ jobs:
           global-json-file: global.json
       - name: Test
         run: dotnet test
+
+  format:
+    # Whitespace and .editorconfig style (ADR 0004). Analyzer rules already run in `dotnet test`.
+    name: dotnet format
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Verify formatting
+        run: dotnet format DotnetFastFormat.slnx --verify-no-changes

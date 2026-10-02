@@ -15,7 +15,7 @@ internal static partial class TestFormatters
     public static IFormatter RenamesIdentifier { get; } = new Delegate(s => s.Replace("Foo", "Bar", StringComparison.Ordinal));
 
     /// <summary>Deletes every comment.</summary>
-    public static IFormatter DropsComments { get; } = new Delegate(s => CommentPattern().Replace(s, ""));
+    public static IFormatter DropsComments { get; } = new Delegate(s => CommentPattern().Replace(s, string.Empty));
 
     /// <summary>Moves the first line (a comment in the fixtures) to the end of the file.</summary>
     public static IFormatter MovesComment { get; } = new Delegate(s =>
@@ -27,7 +27,7 @@ internal static partial class TestFormatters
     /// <summary>Appends an unmatched brace, producing output that does not parse.</summary>
     public static IFormatter InvalidOutput { get; } = new Delegate(s => s + "}");
 
-    [GeneratedRegex(@"//[^\n]*|/\*.*?\*/", RegexOptions.Singleline)]
+    [GeneratedRegex(@"//[^\n]*|/\*.*?\*/", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000)]
     private static partial Regex CommentPattern();
 
     internal sealed class Delegate(Func<string, string> format) : IFormatter
