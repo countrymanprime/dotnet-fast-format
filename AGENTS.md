@@ -5,7 +5,8 @@ syntax trees (no MSBuild), prints through its own doc-printer, and aims to repla
 `dotnet format`'s whitespace/style pass.
 
 **Status: foundations (M0).** The solution, test harness and invariant helper exist; there is no
-formatter yet (the tests use an identity formatter). Core and the CLI land in later milestones.
+formatter yet (the tests use an identity formatter) and the CLI is a skeleton: `--help` and
+`--version` work, and any other run exits 2 with "not implemented".
 
 ## Commands
 

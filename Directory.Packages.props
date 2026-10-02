@@ -5,6 +5,7 @@
   <ItemGroup>
     <!-- Package versions are pinned here; projects reference packages without a Version. -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.12" />
     <PackageVersion Include="xunit.v3" Version="4.0.1" />
     <PackageVersion Include="Verify.XunitV3" Version="33.2.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
