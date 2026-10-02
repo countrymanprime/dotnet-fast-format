@@ -5,7 +5,7 @@ namespace DotnetFastFormat.Cli;
 /// <summary>The <c>dotnet fast-format</c> command line.</summary>
 /// <remarks>
 /// Exit codes: 0 success, 1 a file would change (<c>--check</c>, not yet implemented), 2 an error.
-/// An error never modifies an input (the fail-safe invariant in <c>AGENTS.md</c>).
+/// An error never modifies an input (requirements CLI-001 and CLI-003 in <c>docs/requirements/core.md</c>).
 /// </remarks>
 public static class CliApp
 {

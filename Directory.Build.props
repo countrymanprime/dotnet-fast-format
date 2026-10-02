@@ -10,7 +10,6 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
-    <!-- Public API is documented; StyleCop's XML rules and CS1591 then enforce it. Tests are exempt. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
