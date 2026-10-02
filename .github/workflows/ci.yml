@@ -1,0 +1,40 @@
+# The gate from ADR 0003: `dotnet test` is the whole check. Golden snapshots, invariants and (once
+# it lands) the corpus run are tests, and warnings fail the build via Directory.Build.props.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DiffEngine_Disabled: true
+
+jobs:
+  test:
+    # This job name is what the `main` ruleset requires: "dotnet test (ubuntu-latest)" and
+    # "dotnet test (windows-latest)".
+    name: dotnet test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Test
+        run: dotnet test
