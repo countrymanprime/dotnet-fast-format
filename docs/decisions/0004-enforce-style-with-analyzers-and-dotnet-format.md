@@ -61,3 +61,8 @@ The `dotnet test` gate (analyzers) and the `dotnet format` CI job. Both are requ
 ## More information
 
 Revisit when the formatter can format itself, or when StyleCop ships a stable 1.2.
+
+## Amendment 2026-10-03
+
+`SA1101` (prefix local calls with `this`) is also disabled: it contradicts `dotnet_style_qualification_*`
+= `false` in `.editorconfig`, which `dotnet format` enforces (`IDE0003`). The repository style is no `this.`.

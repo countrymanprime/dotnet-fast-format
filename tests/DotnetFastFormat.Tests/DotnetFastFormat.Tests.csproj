@@ -3,6 +3,13 @@
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Test tiers (ADR 0005). Plain `dotnet test` runs the fast tier; the Slow tier (network, large inputs)
+         runs in the scheduled workflow. Override with `dotnet test -p:TestTier=slow` or `-p:TestTier=all`. -->
+    <TestTier Condition="'$(TestTier)' == ''">fast</TestTier>
+    <TestingPlatformCommandLineArguments Condition="'$(TestTier)' == 'fast'">--filter-not-trait "Category=Slow"</TestingPlatformCommandLineArguments>
+    <TestingPlatformCommandLineArguments Condition="'$(TestTier)' == 'slow'">--filter-trait "Category=Slow"</TestingPlatformCommandLineArguments>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="golden/**" />
     <None Include="golden/**" />

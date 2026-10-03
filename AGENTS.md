@@ -13,9 +13,11 @@ formatter yet (the tests use an identity formatter) and the CLI is a skeleton: `
 | Task | Command |
 |---|---|
 | Restore + build | `dotnet build -warnaserror` |
-| All tests | `dotnet test` |
-| One test | `dotnet test --filter "FullyQualifiedName~<name>"` |
-| Full gate (what CI runs) | `dotnet test` |
+| All tests (fast tier) | `dotnet test` |
+| One test | `dotnet test -- --filter-method "*<name>*"` (or `--filter-class`) |
+| Slow tier (network, corpus) | `dotnet test -p:TestTier=slow` |
+| Every test | `dotnet test -p:TestTier=all` |
+| Full gate (what CI runs on a PR) | `dotnet test` |
 | Style check (second CI job) | `dotnet format DotnetFastFormat.slnx --verify-no-changes` |
 | Fix style | `dotnet format DotnetFastFormat.slnx` |
 
@@ -23,6 +25,11 @@ formatter yet (the tests use an identity formatter) and the CLI is a skeleton: `
 are all tests, and `TreatWarningsAsErrors` in `Directory.Build.props` makes warnings fail the
 build, including the StyleCop and Meziantou analyzers ([ADR 0004](docs/decisions/0004-enforce-style-with-analyzers-and-dotnet-format.md)). There is no separate verify script. Benchmarks live in their own project and are not part
 of the gate.
+
+Tests marked `Slow` run in the scheduled `Slow tests` workflow, not in the PR gate
+([ADR 0005](docs/decisions/0005-tier-tests-with-a-slow-trait.md)). VSTest-style `--filter "..."` is
+not accepted by this runner together with the tier; use the native filters above. Run
+`-p:TestTier=all` when you touch the corpus or fetch step.
 
 Run the full gate before saying a task is done. If a test was filtered out or a count looks
 wrong, say so; do not report green on tests that did not run.

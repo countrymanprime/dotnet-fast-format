@@ -30,6 +30,8 @@ dotnet_style_qualification_for_method = false:warning
 [*.cs]
 # No per-file header convention; the license is repo-level.
 dotnet_diagnostic.SA1633.severity = none
+# Contradicts dotnet_style_qualification_* = false above, which dotnet format enforces (IDE0003).
+dotnet_diagnostic.SA1101.severity = none
 
 [tests/**.cs]
 # Tests are not public API, so StyleCop's documentation rules are off for them. They stay on in src.
