@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DotnetFastFormat.Cli/DotnetFastFormat.Cli.csproj" />
+    <Project Path="src/DotnetFastFormat.Core/DotnetFastFormat.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DotnetFastFormat.Tests/DotnetFastFormat.Tests.csproj" />
+  </Folder>
+</Solution>
