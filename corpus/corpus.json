@@ -1,0 +1,46 @@
+{
+  "repositories": [
+    {
+      "name": "newtonsoft-json",
+      "url": "https://github.com/JamesNK/Newtonsoft.Json",
+      "tag": "13.0.4",
+      "sha": "4e13299d4b0ec96bd4df9954ef646bd2d1b5bf2a",
+      "license": "MIT"
+    },
+    {
+      "name": "dapper",
+      "url": "https://github.com/DapperLib/Dapper",
+      "tag": "2.1.89",
+      "sha": "eb47546a408bbf6c178bda4f04dc205bc51ffbfe",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "serilog",
+      "url": "https://github.com/serilog/serilog",
+      "tag": "v4.4.0",
+      "sha": "6d9fc0b84e004418f2677b5961b9c8970349d0be",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "humanizer",
+      "url": "https://github.com/Humanizr/Humanizer",
+      "tag": "v3.0.10",
+      "sha": "90f0cb1d7427635f38b46350bb1dc5fca2164f2d",
+      "license": "MIT"
+    },
+    {
+      "name": "spectre-console",
+      "url": "https://github.com/spectreconsole/spectre.console",
+      "tag": "0.57.2",
+      "sha": "bbbb5729dde27b58deee44f447a788eea46ee451",
+      "license": "MIT"
+    },
+    {
+      "name": "communitytoolkit-dotnet",
+      "url": "https://github.com/CommunityToolkit/dotnet",
+      "tag": "v8.4.2",
+      "sha": "35dfe7b12da0e64384bfaec7ebc0883196a89f9f",
+      "license": "MIT"
+    }
+  ]
+}
