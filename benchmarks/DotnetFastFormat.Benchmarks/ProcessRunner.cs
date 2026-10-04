@@ -28,6 +28,9 @@ internal static class ProcessRunner
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
         startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
 
+        // Some corpus repositories target Windows-only frameworks; allow restoring them on Linux.
+        startInfo.Environment["EnableWindowsTargeting"] = "true";
+
         var lines = new ConcurrentQueue<string>();
         void Remember(object? sender, DataReceivedEventArgs e)
         {

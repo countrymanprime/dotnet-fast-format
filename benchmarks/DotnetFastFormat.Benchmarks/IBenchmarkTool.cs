@@ -14,4 +14,7 @@ internal interface IBenchmarkTool
 
     /// <summary>The timed command, or null when the tool cannot run on this working copy.</summary>
     ProcessSpec? Command(string workingCopy);
+
+    /// <summary>Whether a run counts as having formatted the repository. The default is exit code 0.</summary>
+    bool IsSuccess(ProcessOutcome outcome) => outcome.ExitCode == 0;
 }

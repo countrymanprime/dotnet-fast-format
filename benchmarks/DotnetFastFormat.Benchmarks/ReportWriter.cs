@@ -77,7 +77,7 @@ internal static class ReportWriter
         Summary? summary = Stats.Summarize(succeeded.Select(run => run.Seconds));
         if (summary is null)
         {
-            return FormattableString.Invariant($"failed ({(result.Runs.Count > 0 ? result.Runs[0].Error : null) ?? "no runs"})");
+            return FormattableString.Invariant($"failed ({Shorten((result.Runs.Count > 0 ? result.Runs[0].Error : null) ?? "no runs")})");
         }
 
         string cell = $"{Format(summary.Median)} s ({Format(summary.Min)}–{Format(summary.Max)}), {succeeded[0].ChangedFiles} files changed";
@@ -101,6 +101,13 @@ internal static class ReportWriter
         }
 
         return $"{Format(total)} s";
+    }
+
+    private static string Shorten(string error)
+    {
+        const int Limit = 110;
+        string oneLine = error.Replace('\n', ' ').Replace('|', '/');
+        return oneLine.Length <= Limit ? oneLine : oneLine[..Limit] + "…";
     }
 
     private static string Format(double value) => value.ToString("0.0", CultureInfo.InvariantCulture);

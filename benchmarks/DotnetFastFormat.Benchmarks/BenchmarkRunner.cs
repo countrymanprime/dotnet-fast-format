@@ -25,6 +25,7 @@ internal static class BenchmarkRunner
         CorpusRepository[] repositories = [.. manifest.Where(r => options.Repositories.Count == 0 || options.Repositories.Contains(r.Name))];
         string root = RepositoryRoot.Find();
         string workspace = Path.Combine(root, ".bench");
+        string workRoot = WorkspacePaths.WorkRoot(Environment.GetEnvironmentVariable("DOTNET_FAST_FORMAT_BENCH_DIR"));
         string[] toolNames = [.. ToolNames.All.Where(name => options.Tools.Count == 0 || options.Tools.Contains(name))];
         IBenchmarkTool[] tools = [.. toolNames.Select(name => Create(name, Path.Combine(workspace, "tools")))];
 
@@ -41,7 +42,7 @@ internal static class BenchmarkRunner
                 var runs = new List<Measurement>();
                 for (int run = 1; run <= options.Runs; run++)
                 {
-                    string workingCopy = Path.Combine(workspace, "work", repository.Name + "-" + tool.Name);
+                    string workingCopy = Path.Combine(workRoot, repository.Name + "-" + tool.Name);
                     Measurement? measurement = MeasureOnce(tool, checkout, workingCopy);
                     if (measurement is null)
                     {
@@ -92,6 +93,13 @@ internal static class BenchmarkRunner
         CopyDirectory(checkout, workingCopy);
         try
         {
+            // A repository's global.json can pin an SDK that is not installed here; the installed SDK is used instead.
+            string globalJson = Path.Combine(workingCopy, "global.json");
+            if (File.Exists(globalJson))
+            {
+                File.Delete(globalJson);
+            }
+
             ProcessSpec? command = tool.Command(workingCopy);
             if (command is null)
             {
@@ -108,14 +116,14 @@ internal static class BenchmarkRunner
             }
 
             ProcessOutcome outcome = ProcessRunner.Run(command, ToolTimeout);
-            if (outcome.ExitCode != 0)
+            if (!tool.IsSuccess(outcome))
             {
                 return new Measurement(false, outcome.Seconds, 0, $"exit code {outcome.ExitCode}: {outcome.OutputTail}");
             }
 
             // Untracked files (bin, obj) are build output, not formatting work.
             string status = GitRunner.RunChecked(workingCopy, "status", "--porcelain", "--untracked-files=no");
-            int changed = status.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
+            int changed = ChangedFiles.Count(status);
             return new Measurement(true, outcome.Seconds, changed, null);
         }
         finally

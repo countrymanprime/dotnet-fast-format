@@ -43,6 +43,21 @@ public class ReportWriterTests
     }
 
     [Fact]
+    public void TruncatesLongErrorsInTheTable()
+    {
+        string longError = new('x', 500);
+        var report = Report with
+        {
+            Results = [new ToolResult("dapper", "csharpier", [new Measurement(false, 1.0, 0, longError)])],
+        };
+
+        string markdown = ReportWriter.ToMarkdown(report);
+
+        Assert.DoesNotContain(longError, markdown, StringComparison.Ordinal);
+        Assert.Contains("…)", markdown, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TotalsOnlyCoverRepositoriesWhereTheToolSucceeded()
     {
         string markdown = ReportWriter.ToMarkdown(Report);
