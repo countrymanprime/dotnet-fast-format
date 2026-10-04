@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Doc IR, printer and per-node builders. No file I/O, no CLI dependency. -->
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="DotnetFastFormat.Tests" />
   </ItemGroup>
 </Project>
