@@ -57,6 +57,28 @@ What the numbers say:
   Humanizer's full `dotnet format` could not restore there because NuGet's signature revocation check could
   not reach its server. That is environmental, and the runner measures it.
 
+## First measurement of this formatter (M1, T-109)
+
+Measured on 2026-10-04 in a 4-core cloud container (SDK 10.0.112), the formatter at the T-106 commit against
+CSharpier 1.3.0, three runs each, one tool at a time. This is a different machine from the baseline above, so only
+the ratio is comparable.
+
+| Tool | Total, 6 repositories |
+|---|---|
+| CSharpier 1.3.0 | 19.7 s |
+| dotnet-fast-format (M1, with output check) | 24.0 s |
+
+That is **1.22 times CSharpier**, inside the 1.5 times target. It does not show the target is met: in M1 only
+declarations are printed and bodies are copied as written, so the formatter does much less work than it will, and
+it runs files one after another. Treat it as the first row to watch, not as a pass.
+
+Cost of the always-on output check ([ADR 0009](0009-self-check-output-before-writing.md)), measured in-process
+with `--self-check-cost` (median of 3 runs, no file writes): the check takes **50 to 71 percent of format plus
+check time** (for example 0.63 s to format and 1.42 s to check Newtonsoft.Json's 944 files). The check parses the
+input again and the output once, while the formatter parses the input once, so parsing dominates. It does not break
+the ratio above, but it is the largest single cost today. A follow-up could pass the formatter's input tree to the
+verifier and save one parse; that is not done here, and the check stays always on.
+
 ## Decision outcome
 
 Express the speed target and the regression gate as **ratios measured in the same run**, never in seconds:
