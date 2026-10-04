@@ -18,7 +18,7 @@ Nothing formats yet. The goal is a harness where every later change is checked a
 | T-003 | Test project with [Verify](https://github.com/VerifyTests/Verify) and the shared invariant helper (idempotent, tree-preserving, no-loss, valid output) | FMT-001, FMT-002, FMT-003, FMT-005 | Helper fails on a deliberately broken formatter | `dotnet test -- --filter-class "*InvariantsTests"` (done) |
 | T-004 | CI workflow running `dotnet test` on Windows and Linux; then require it on `main` | all | Required check on the Pull Request ruleset | PR shows the checks `checks / dotnet test (ubuntu-latest)`, `checks / dotnet test (windows-latest)` and `checks / dotnet format` (workflows done: `pull-request.yml` before merge, `main.yml` after; requiring them on `main` is a repo setting, still to do) |
 | T-005 | Pin the corpus (repository URLs plus commit SHAs) and a fetch step | FMT-001, FMT-002 | Fetch is reproducible: each repo is checked out at its pinned commit, and a clean checkout is reused | `dotnet test -- --filter-class "*Corpus*"` (fast, offline) and `dotnet test -p:TestTier=slow` (network) (done) |
-| T-006 | Baseline: time `dotnet format` and CSharpier on the corpus; record in an ADR; set PERF target | PERF-003 | Numbers recorded | `dotnet run --project benchmarks/DotnetFastFormat.Benchmarks -c Release` (done; [ADR 0006](decisions/0006-formatting-speed-baseline.md) is Proposed until the target is confirmed) |
+| T-006 | Baseline: time `dotnet format` and CSharpier on the corpus; record in an ADR; set PERF target | PERF-003 | Numbers recorded | `dotnet run --project benchmarks/DotnetFastFormat.Benchmarks -c Release` (done; [ADR 0006](decisions/0006-formatting-speed-baseline.md) accepted: the target is a ratio to CSharpier) |
 
 ## Later milestones
 

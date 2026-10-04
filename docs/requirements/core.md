@@ -41,4 +41,6 @@ Priority: Must / Should / Could. IDs are stable and never reused.
 |---|---|---|---|---|
 | PERF-001 | The formatter shall format files in parallel. | Should | Multi-file run on the benchmark corpus. | Benchmark project (M5) |
 | PERF-002 | Where caching is enabled, the formatter shall skip files unchanged since the last successful run. | Could | Re-run on an unchanged tree. | `Cache.SkipsUnchanged` (M5) |
-| PERF-003 | The formatter shall not regress wall-clock time on the benchmark corpus by more than the agreed threshold. | Should | Scheduled benchmark job. | Benchmark CI job (M5); threshold basis proposed in [ADR 0006](../decisions/0006-formatting-speed-baseline.md), UNRESOLVED |
+| PERF-003 | The formatter shall not regress wall-clock time on the benchmark corpus by more than the agreed threshold. | Should | Scheduled benchmark job. | Benchmark CI job (M5); the threshold is a ratio to CSharpier measured in the same job, starting at 15 percent ([ADR 0006](../decisions/0006-formatting-speed-baseline.md)); the exact value is set when the formatter exists |
+| PERF-004 | The formatter shall format the pinned corpus in at most 1.5 times CSharpier's wall-clock time, measured in the same run. | Should | Benchmark run on the pinned corpus. | Benchmark CI job (M5) |
+| PERF-005 | The formatter shall not be slower than `dotnet format whitespace` on the pinned corpus, measured in the same run. | Should | Benchmark run on the pinned corpus. | Benchmark CI job (M5) |

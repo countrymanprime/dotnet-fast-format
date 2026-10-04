@@ -1,6 +1,6 @@
 # 0006. Set the formatting speed target relative to CSharpier
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-04
 - **Deciders:** countrymanprime
 - **Related:** [PRD](../PRD.md) (open question 5), [PERF-003](../requirements/core.md), [benchmarks/README.md](../../benchmarks/README.md), [PR 3](https://github.com/countrymanprime/dotnet-fast-format/pull/3)
@@ -57,7 +57,7 @@ What the numbers say:
   Humanizer's full `dotnet format` could not restore there because NuGet's signature revocation check could
   not reach its server. That is environmental, and the runner measures it.
 
-## Decision outcome (proposed)
+## Decision outcome
 
 Express the speed target and the regression gate as **ratios measured in the same run**, never in seconds:
 
@@ -70,8 +70,8 @@ Express the speed target and the regression gate as **ratios measured in the sam
    (start at 15 percent, judged against the run-to-run spread of the ratio). The new formatter is added as a
    tool in the harness once it can format a real file.
 
-If accepted, this resolves PRD open question 5 and sets PERF-003's threshold basis. Status moves to Accepted
-and the PRD and requirements are updated in the same change.
+This resolves PRD open question 5 and sets PERF-003's threshold basis. The PRD and the requirements were
+updated in the same change (new requirements PERF-004 and PERF-005).
 
 ### Consequences
 
@@ -82,6 +82,10 @@ and the PRD and requirements are updated in the same change.
 - **Bad:** the workload differs (see above), so the target compares time to format a repository, not like for
   like. A formatter that rewrites less than CSharpier has to parse the same amount, so the floor on its time is
   similar, but this should be re-checked once it exists.
+- **Neutral:** on the baseline the floor is tighter than the target. `dotnet format whitespace` takes about 1.17
+  times CSharpier's time, so "never slower than `dotnet format whitespace`" binds before "at most 1.5 times
+  CSharpier" does. The 1.5 times figure only becomes the binding limit if `dotnet format whitespace` slows to more
+  than 1.5 times CSharpier's time (for example after an SDK change), or if the floor is dropped.
 - **Neutral:** the corpus is six repositories, 2,702 files, 17 MB, so absolute numbers say little about a
   million-line solution. M5 adds a larger input before the gate is trusted.
 
@@ -92,7 +96,7 @@ report. The first formatter build (M1) adds a row to this table.
 
 ## Considered options
 
-1. **Ratios to CSharpier, measured in the same run** (proposed).
+1. **Ratios to CSharpier, measured in the same run** (chosen).
 2. A fixed time budget in seconds on the runner. Rejected: the same harness varied by about 40 percent in
    absolute time between two runs.
 3. Parity with `dotnet format whitespace` only. Rejected as the target: it is the floor, not the goal, and

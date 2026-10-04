@@ -86,14 +86,16 @@ Formatted text goes to stdout only with `--stdin`; diagnostics go to stderr.
 
 ## Success metrics
 
-Targets marked *proposed* are set after the M0 baseline measurement.
+The speed targets come from the M0 baseline ([ADR 0006](decisions/0006-formatting-speed-baseline.md)).
 
 | Metric | Target |
 |---|---|
 | Idempotency on the pinned corpus | 100% |
 | Tree-equivalence on the pinned corpus | 100% |
 | Crashes on the pinned corpus | 0 |
-| Wall-clock vs `dotnet format` on the named corpus | *Proposed:* at least an order of magnitude faster; confirm after M0 |
+| Wall-clock on the pinned corpus, relative to CSharpier in the same run | At most 1.5 times (stretch: parity) |
+| Wall-clock on the pinned corpus, relative to `dotnet format` (MSBuild) | At least 10 times faster (the M0 baseline gap to CSharpier is about 18 times) |
+| Wall-clock relative to `dotnet format whitespace` | Never slower |
 | `.editorconfig` keys covered by a fixture | Tracked in the support table |
 
 ## Risks and rabbit holes
@@ -123,8 +125,8 @@ plus idempotency and tree-equivalence checks), a stability policy for stable out
 4. **Target framework and AOT.** Which .NET versions to support, and whether Roslyn syntax-only
    packages permit Native AOT (a related project reported AOT failures with Roslyn Workspaces,
    which this project does not use). UNRESOLVED
-5. **Speed target.** Measured in M0; a ratio-based target is proposed in
-   [ADR 0006](decisions/0006-formatting-speed-baseline.md). UNRESOLVED until that ADR is accepted
+5. **Speed target.** RESOLVED by [ADR 0006](decisions/0006-formatting-speed-baseline.md): ratios to
+   CSharpier measured in the same run, not seconds. See the success metrics.
 
 ## Milestones and definition of done
 
