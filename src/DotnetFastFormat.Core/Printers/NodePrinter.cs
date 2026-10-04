@@ -18,6 +18,10 @@ internal static class NodePrinter
             UsingDirectiveSyntax or ExternAliasDirectiveSyntax => builder.Tokens(node),
             BaseNamespaceDeclarationSyntax ns => NamespacePrinter.Print(ns, builder),
             TypeDeclarationSyntax type => TypePrinter.Print(type, builder),
+            FieldDeclarationSyntax field => MemberPrinter.Field(field, builder),
+            PropertyDeclarationSyntax property => MemberPrinter.Property(property, builder),
+            MethodDeclarationSyntax method => MemberPrinter.Method(method, builder),
+            ConstructorDeclarationSyntax constructor => MemberPrinter.Constructor(constructor, builder),
             _ => null,
         };
 

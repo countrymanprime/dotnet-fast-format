@@ -59,3 +59,25 @@ Classes, structs, interfaces and records (including `record struct`).
   (`: Base(x)`) or attributes on a type parameter.
 - Members are kept as written until their printer exists; only the first line of a kept member is re-indented, its
   later lines keep the indentation they had.
+
+## Members
+
+Fields, properties with no accessor bodies (or an expression body), methods and constructors. Every other member
+(events, indexers, operators, enums, delegates, destructors) and any member with attributes is kept as written.
+
+- Fields print `modifiers Type name = value;` with single spaces, `a, b` for several declarators, and the value
+  kept as written.
+- An auto-property prints `Type Name { get; set; }` on one line, then `= value;` when it has an initializer. A
+  property with an accessor that has a body is kept as written.
+- A method or constructor signature stays on one line when it fits in 100 columns. When it does not, the
+  parameters go one per line, indented one level, with `)` on its own line. Parameters follow the default rules
+  under "Type declarations".
+- Constraint clauses of a method follow the signature on the same line when everything fits, and otherwise sit
+  one per line, indented one level.
+- A method or constructor with no body ends in `;`. An expression body prints ` => value;` on the signature's last
+  line, with the value kept as written.
+- A block body is printed on the line below the signature (Allman) and kept as written until statements are
+  supported (M2): its lines keep the indentation they had, so a body written for a different indent looks
+  misaligned. An empty block prints `{ }` on the signature's last line (or on its own line below a wrapped
+  signature).
+- A constructor initializer (`: base(x)`) goes on its own indented line, kept as written.
