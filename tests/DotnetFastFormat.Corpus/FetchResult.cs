@@ -1,4 +1,4 @@
-namespace DotnetFastFormat.Tests.Corpus;
+namespace DotnetFastFormat.Corpus;
 
 /// <summary>The outcome of fetching one corpus repository.</summary>
 /// <param name="Path">The checkout directory.</param>

@@ -1,4 +1,4 @@
-namespace DotnetFastFormat.Tests.Corpus;
+namespace DotnetFastFormat.Corpus;
 
 /// <summary>Locates the repository checkout the tests run from.</summary>
 public static class RepositoryRoot

@@ -4,6 +4,7 @@
     <Project Path="src/DotnetFastFormat.Core/DotnetFastFormat.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/DotnetFastFormat.Corpus/DotnetFastFormat.Corpus.csproj" />
     <Project Path="tests/DotnetFastFormat.Tests/DotnetFastFormat.Tests.csproj" />
   </Folder>
 </Solution>

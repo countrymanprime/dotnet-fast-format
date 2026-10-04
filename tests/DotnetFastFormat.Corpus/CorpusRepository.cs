@@ -1,4 +1,4 @@
-namespace DotnetFastFormat.Tests.Corpus;
+namespace DotnetFastFormat.Corpus;
 
 /// <summary>One pinned repository in <c>corpus/corpus.json</c>.</summary>
 /// <param name="Name">Directory name under the corpus cache, so it must be a safe path segment.</param>

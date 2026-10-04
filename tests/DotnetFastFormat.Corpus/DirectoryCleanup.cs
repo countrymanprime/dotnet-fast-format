@@ -1,6 +1,7 @@
-namespace DotnetFastFormat.Tests.Corpus;
+namespace DotnetFastFormat.Corpus;
 
-internal static class TestDirectory
+/// <summary>Deletes directory trees that git has written to.</summary>
+public static class DirectoryCleanup
 {
     /// <summary>Deletes a directory tree, clearing the read-only flag git sets on object files (Windows refuses otherwise).</summary>
     public static void Delete(string path)

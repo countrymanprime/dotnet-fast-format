@@ -1,10 +1,10 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace DotnetFastFormat.Tests.Corpus;
+namespace DotnetFastFormat.Corpus;
 
 /// <summary>Runs the <c>git</c> command line without ever prompting or pulling LFS objects.</summary>
-internal static class GitRunner
+public static class GitRunner
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(10);
 

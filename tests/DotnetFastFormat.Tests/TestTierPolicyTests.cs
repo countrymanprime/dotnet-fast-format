@@ -1,5 +1,5 @@
 using System.Reflection;
-using DotnetFastFormat.Tests.Corpus;
+using DotnetFastFormat.Corpus;
 
 namespace DotnetFastFormat.Tests;
 

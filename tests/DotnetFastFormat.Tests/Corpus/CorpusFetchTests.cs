@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 
+using DotnetFastFormat.Corpus;
+
 namespace DotnetFastFormat.Tests.Corpus;
 
 /// <summary>

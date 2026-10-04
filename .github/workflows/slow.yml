@@ -12,6 +12,7 @@ on:
     paths:
       - "corpus/**"
       - "tests/DotnetFastFormat.Tests/Corpus/**"
+      - "tests/DotnetFastFormat.Corpus/**"
       - ".github/workflows/slow.yml"
 
 permissions:

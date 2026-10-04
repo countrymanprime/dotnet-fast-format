@@ -1,3 +1,5 @@
+using DotnetFastFormat.Corpus;
+
 namespace DotnetFastFormat.Tests.Corpus;
 
 public class CorpusManifestTests

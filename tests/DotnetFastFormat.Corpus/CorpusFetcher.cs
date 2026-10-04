@@ -1,4 +1,4 @@
-namespace DotnetFastFormat.Tests.Corpus;
+namespace DotnetFastFormat.Corpus;
 
 /// <summary>Checks out each pinned corpus repository at its exact commit.</summary>
 public static class CorpusFetcher
@@ -42,7 +42,7 @@ public static class CorpusFetcher
                 throw new InvalidOperationException($"'{target}' exists but is not a git checkout; refusing to delete it.");
             }
 
-            TestDirectory.Delete(target);
+            DirectoryCleanup.Delete(target);
         }
 
         Directory.CreateDirectory(root);

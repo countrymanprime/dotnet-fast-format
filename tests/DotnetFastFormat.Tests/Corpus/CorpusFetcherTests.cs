@@ -1,3 +1,5 @@
+using DotnetFastFormat.Corpus;
+
 namespace DotnetFastFormat.Tests.Corpus;
 
 /// <summary>Exercises the fetch step offline, against a throwaway local git repository.</summary>
@@ -5,7 +7,7 @@ public sealed class CorpusFetcherTests : IDisposable
 {
     private readonly string workspace = Path.Combine(Path.GetTempPath(), "dff-corpus-" + Guid.NewGuid().ToString("N"));
 
-    public void Dispose() => TestDirectory.Delete(workspace);
+    public void Dispose() => DirectoryCleanup.Delete(workspace);
 
     [Fact]
     public void FetchesTheExactPinnedCommit()

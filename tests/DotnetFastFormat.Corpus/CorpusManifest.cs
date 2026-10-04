@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
-namespace DotnetFastFormat.Tests.Corpus;
+namespace DotnetFastFormat.Corpus;
 
 /// <summary>Loads and validates <c>corpus/corpus.json</c>, the list of pinned corpus repositories.</summary>
 public static partial class CorpusManifest
