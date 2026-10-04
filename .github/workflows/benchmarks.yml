@@ -1,10 +1,13 @@
 # Formatting speed baseline (T-006, ADR 0006): times dotnet format and CSharpier on the pinned corpus.
-# Not part of the PR gate. Runs on demand, and on pull requests that change the harness or the corpus.
+# Not part of the PR gate. Runs on demand, and after a merge to main that changed the harness or the
+# corpus. It is deliberately not a pull_request trigger: GitHub applies a path filter to the whole PR
+# diff, so it would rerun this 25-minute job on every push to such a PR.
 name: Benchmarks
 
 on:
   workflow_dispatch:
-  pull_request:
+  push:
+    branches: [main]
     paths:
       - "benchmarks/**"
       - "corpus/**"

@@ -7,6 +7,8 @@ on:
   schedule:
     - cron: "17 3 * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
   pull_request:
     # A change to a pin or to the fetch step is checked in its own PR.
     paths:

@@ -22,8 +22,8 @@ delete a directory that is not a git checkout.
 - Every `dotnet test` run validates the manifest and exercises the fetcher against a local git
   repository (`CorpusManifestTests`, `CorpusFetcherTests`), offline.
 - The `Slow` tier fetches all pinned repositories over the network (`CorpusFetchTests`):
-  `dotnet test -p:TestTier=slow`. The `Slow tests` workflow runs it nightly and on changes to this
-  folder ([ADR 0005](../docs/decisions/0005-tier-tests-with-a-slow-trait.md)).
+  `dotnet test -p:TestTier=slow`. The `Slow tests` workflow runs it nightly, after each merge to `main`, and on pull requests
+  that change this folder ([ADR 0005](../docs/decisions/0005-tier-tests-with-a-slow-trait.md)).
 
 ## Updating a pin or adding a repository
 

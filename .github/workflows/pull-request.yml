@@ -1,0 +1,18 @@
+# Runs before a change merges. The checks below are the ones the `main` ruleset requires:
+# "checks / dotnet test (ubuntu-latest)", "checks / dotnet test (windows-latest)" and
+# "checks / dotnet format". Post-merge work lives in main.yml; the slow tier in slow.yml.
+name: Pull request
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pull-request-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml

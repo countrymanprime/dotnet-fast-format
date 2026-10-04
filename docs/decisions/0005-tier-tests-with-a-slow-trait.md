@@ -64,3 +64,8 @@ which combine with the tier: `dotnet test -- --filter-method "*<name>*"` or
 
 Revisit if the slow tier grows (fuzzing, large inputs): add categories only together with a job that
 runs them, and extend `KnownCategories` in the policy test.
+
+## Amendment 2026-10-04
+
+`slow.yml` also runs on every push to `main`, so the slow tier is verified after each merge as well as nightly. The
+CI workflows were split at the same time: `pull-request.yml` and `main.yml` both call the shared `checks.yml`.

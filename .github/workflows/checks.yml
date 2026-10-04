@@ -1,19 +1,13 @@
-# The gate from ADR 0003: `dotnet test` is the whole check. Golden snapshots, invariants and (once
-# it lands) the corpus run are tests, and warnings fail the build via Directory.Build.props.
-name: CI
+# The checks every change must pass: the gate from ADR 0003 (`dotnet test`, which includes the
+# analyzers) and the style check from ADR 0004. Called by pull-request.yml before merge and by
+# main.yml after it, so both run exactly the same thing.
+name: Checks
 
 on:
-  pull_request:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   DOTNET_NOLOGO: true
@@ -22,8 +16,7 @@ env:
 
 jobs:
   test:
-    # The `main` ruleset requires: "dotnet test (ubuntu-latest)", "dotnet test (windows-latest)"
-    # and "dotnet format".
+    # Shown on a pull request as "checks / dotnet test (<os>)" (the calling job is named `checks`).
     name: dotnet test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20

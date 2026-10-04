@@ -30,7 +30,8 @@ and `.editorconfig` lookups search upward and would otherwise pick up this repos
 
 Timings depend on the machine, so compare numbers only from the same environment. The report records
 the OS, processor count, SDK version, tool versions and the commit it ran from. The
-`Benchmarks` workflow runs it on a GitHub-hosted runner.
+`Benchmarks` workflow runs it on a GitHub-hosted runner, on demand and after a merge to `main` that changes the
+harness or the corpus (not on pull requests: a path filter there applies to the whole PR diff).
 
 A new formatter will be added as a tool here once it can format a real file; the speed target in
 [ADR 0006](../docs/decisions/0006-formatting-speed-baseline.md) is measured against these numbers.
