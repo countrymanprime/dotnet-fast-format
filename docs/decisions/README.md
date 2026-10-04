@@ -17,3 +17,4 @@ This folder records significant architecture and design decisions as
 | [0003](0003-use-dotnet-test-as-the-single-gate.md) | Use `dotnet test` as the single gate | Accepted | 2026-10-01 |
 | [0004](0004-enforce-style-with-analyzers-and-dotnet-format.md) | Enforce code style with analyzers and `dotnet format` | Accepted | 2026-10-02 |
 | [0005](0005-tier-tests-with-a-slow-trait.md) | Tier tests with a `Slow` trait | Accepted | 2026-10-03 |
+| [0006](0006-formatting-speed-baseline.md) | Set the formatting speed target relative to CSharpier | Proposed | 2026-10-04 |

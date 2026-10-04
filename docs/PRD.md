@@ -123,7 +123,8 @@ plus idempotency and tree-equivalence checks), a stability policy for stable out
 4. **Target framework and AOT.** Which .NET versions to support, and whether Roslyn syntax-only
    packages permit Native AOT (a related project reported AOT failures with Roslyn Workspaces,
    which this project does not use). UNRESOLVED
-5. **Speed target.** Fixed after the M0 baseline. UNRESOLVED
+5. **Speed target.** Measured in M0; a ratio-based target is proposed in
+   [ADR 0006](decisions/0006-formatting-speed-baseline.md). UNRESOLVED until that ADR is accepted
 
 ## Milestones and definition of done
 
