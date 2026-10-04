@@ -1,6 +1,8 @@
 # 0007. Use Microsoft conventions at 100 columns as the default style
 
-- **Status:** Proposed
+- **Status:** Accepted
+- **Acceptance:** accepted provisionally on 2026-10-04 under the author's delegation while they were away, after an
+  independent review that asked for the changes below (adopted). Pending the author's review.
 - **Date:** 2026-10-04
 - **Deciders:** countrymanprime
 - **Related:** [PRD](../PRD.md) (open question 1), [ADR 0002](0002-build-a-doc-printer-on-roslyn-syntax-trees.md), [ADR 0006](0006-formatting-speed-baseline.md)
@@ -36,16 +38,24 @@ Measured on 2026-10-04 so the options rest on behavior, not memory.
 3. No wrapping, like `dotnet format`: whitespace only.
 4. Reproduce CSharpier's output exactly.
 
-## Decision outcome (proposed)
+## Decision outcome
 
 **Chosen option: Microsoft conventions at 100 columns**, because the conventions cover layout and braces,
 they leave the width open, and 100 matches the default of the tool the speed target is measured against.
 
-- Layout: four spaces, no tabs; Allman braces; one statement and one declaration per line; a blank line between
-  members; an empty body printed as `{ }`.
+- Layout: four spaces, no tabs; Allman braces; one statement and one declaration per line; an empty body
+  printed as `{ }`.
+- Blank lines between members: exactly one blank line between members, except between consecutive members of the
+  same single-line kind (fields, auto-properties, abstract and interface method signatures, events without
+  accessors), where the author's choice is kept: none or one blank line, more than one collapsed to one. The
+  Microsoft convention asks for blank lines between method and property definitions, not between every pair of
+  members. The rule depends on the member's kind, not on how it happens to wrap, so formatting stays stable when
+  a line crosses the width.
 - Wrapping: a construct stays on one line when it fits in the width, and otherwise breaks at its outermost group
   first (for example a parameter list breaks one parameter per line before anything inside a parameter does).
-- Width: `max_line_length` from `.editorconfig` when set (M4), otherwise 100.
+- Width: `max_line_length` from `.editorconfig` when set (M4), otherwise 100. Width is measured in UTF-16 code
+  units, and a tab counts as the indent size once tabs are supported. Verbatim text ([ADR 0008](0008-print-unsupported-syntax-verbatim.md))
+  is never reflowed; it counts towards the width only up to its first line break.
 - The formatter does not move or sort `using` directives and does not rewrite namespaces: that is a style fix,
   not layout.
 - Each rule is written down per construct in `docs/style.md`, which grows with the fixtures.

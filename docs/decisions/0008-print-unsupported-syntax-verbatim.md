@@ -1,6 +1,8 @@
 # 0008. Print unsupported syntax and trivia-bearing nodes verbatim
 
-- **Status:** Proposed
+- **Status:** Accepted
+- **Acceptance:** accepted provisionally on 2026-10-04 under the author's delegation while they were away, after an
+  independent review that asked for the changes below (adopted). Pending the author's review.
 - **Date:** 2026-10-04
 - **Deciders:** countrymanprime
 - **Related:** [ADR 0002](0002-build-a-doc-printer-on-roslyn-syntax-trees.md), requirements FMT-008 and FMT-009
@@ -20,24 +22,45 @@ breaking the invariants (idempotent, tree-preserving, no loss) or waiting until 
 
 ## Considered options
 
-1. **Print such nodes verbatim, per node** (recommended).
+1. **Print such nodes verbatim, per node, with a few whole-file cases** (chosen).
 2. Reject the whole file with an error when it contains anything unsupported.
 3. Print the whole file verbatim whenever it contains anything unsupported.
 
-## Decision outcome (proposed)
+## Decision outcome
 
-**Chosen option: verbatim fallback, per node**, because it keeps the invariants true by construction for the
+**Chosen option: verbatim fallback, per node, with whole-file cases for the hazards that span nodes**, because it keeps the invariants true by construction for the
 copied text and lets each milestone shrink the fallback instead of rewriting it.
 
-- A node kind with no printer yet is emitted as its original source text, exactly.
-- A node whose leading or trailing trivia contains a comment or a preprocessor directive is emitted as its
-  original source text, including that trivia, until trivia handling lands (M3). Whitespace-only trivia does not
-  trigger the fallback.
-- The fallback applies at the smallest node that has the problem: a class with one commented member prints the
-  class normally and that one member verbatim.
-- Verbatim text is copied as written, including its own indentation; it is not re-indented. A body printed
-  verbatim next to a reformatted signature may look inconsistent until the milestone that formats it.
-- The fallback is a normal, documented behavior, not an error: the exit code is 0.
+**The unit.** The fallback applies to a syntax node and is never finer than a node: a declaration (using
+directive, namespace, type, member) or a node inside one that has no printer, such as a method body. It never
+applies to a single token.
+
+**What triggers it.**
+
+1. A node kind with no printer yet.
+2. A node that carries a comment or a directive: its leading trivia, its trailing trivia, or the trivia on any
+   of its own tokens (not the tokens of its child nodes, which are judged on their own) contains a comment
+   (single-line, multi-line or documentation) or a preprocessor directive. Whitespace-only trivia does not
+   trigger it. The smallest such node is the one printed verbatim, so a class with one commented member prints the
+   class normally and that member verbatim.
+3. Whole file, because the hazard spans nodes: the compilation unit is printed verbatim when the file contains a
+   conditional or region directive (`#if`, `#elif`, `#else`, `#endif`, `#region`, `#endregion`) anywhere, when the
+   end-of-file token carries a comment or a directive, or when the file has no declarations (empty,
+   whitespace-only or comment-only). Standalone directives (`#nullable`, `#pragma`, `#line` and so on) trigger
+   rule 2 only.
+
+**What verbatim means.**
+
+- A node's verbatim text is its full source text with leading and trailing whitespace removed. Comments before
+  the node stay with it, and a comment that trails its last token stays with it.
+- The parent prints every separator between its children: one line break, or a blank line where the style
+  requires one or the author had one. Blank lines are counted from the end-of-line trivia in the node's leading
+  trivia before its first comment. A node's trivia is never printed twice.
+- Verbatim text is copied as written. It is not re-indented, and its line terminators are not converted,
+  because converting them inside a multi-line string literal would change the string's value.
+- The line breaks the printer writes use the file's dominant line terminator (LF unless CRLF is more common), and
+  formatted output ends with exactly one line terminator. Both are stable across passes.
+- The fallback is normal behavior, not an error: the exit code is 0.
 
 ### Consequences
 
@@ -46,7 +69,10 @@ copied text and lets each milestone shrink the fallback instead of rewriting it.
 - **Bad:** formatted and verbatim regions can look inconsistent in one file; a file mostly made of the fallback
   changes little, so M1's benchmark row will say little about speed.
 - **Bad:** a bug in deciding what counts as "has a comment" could still lose one, so every fixture with
-  comments in unusual positions is mandatory (the `add-formatting-rule` skill already asks for them).
+  comments in unusual positions is mandatory (the `add-formatting-rule` skill already asks for them), and each
+  printer's fixtures must include a formatted node next to a verbatim sibling to prove idempotency at the boundary.
+- **Bad:** a file with any `#if` or `#region` is not formatted at all in M1, which covers many real files; M3 and
+  the preprocessor ADR lift this.
 - **Neutral:** idempotency still has to be tested at the boundary between formatted and verbatim regions.
 
 ### Confirmation
