@@ -35,6 +35,13 @@ public class OutputVerifierTests
     }
 
     [Fact]
+    public void AddingAFinalNewlineAfterADirectiveOrCommentPasses()
+    {
+        Assert.True(OutputVerifier.Verify("class C { }\n#endif", "class C { }\n#endif\n").Succeeded);
+        Assert.True(OutputVerifier.Verify("class C { }\n// end", "class C { }\n// end\n").Succeeded);
+    }
+
+    [Fact]
     public void ANewSyntaxErrorIsReported()
     {
         VerificationResult result = OutputVerifier.Verify(Source, Source + "}");
