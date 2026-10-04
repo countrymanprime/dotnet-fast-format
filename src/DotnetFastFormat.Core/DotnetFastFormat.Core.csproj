@@ -1,3 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Doc IR, printer and per-node builders land here from M1. No file I/O, no CLI dependency. -->
+  <!-- Doc IR, printer and per-node builders. No file I/O, no CLI dependency. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotnetFastFormat.Tests" />
+  </ItemGroup>
 </Project>
