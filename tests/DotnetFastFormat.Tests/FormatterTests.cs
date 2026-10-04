@@ -91,4 +91,22 @@ public class FormatterTests
 
         Assert.Equal(source + "\n", Formatter.Format(source));
     }
+
+    [Fact]
+    public void UsesTheDominantLineEndingForTheLinesItWrites()
+    {
+        const string Source = "using   System;\r\nnamespace N\r\n{\r\n    class A { }\r\n}";
+
+        Assert.Equal("using System;\r\n\r\nnamespace N\r\n{\r\n    class A { }\r\n}\r\n", Formatter.Format(Source));
+    }
+
+    [Fact]
+    public void FormattedAndVerbatimSiblingsAreStable()
+    {
+        const string Source = "using   A;\n// note\nusing   B;\nusing   C;\n\nnamespace N { }\n";
+
+        string once = Invariants.FormatAndCheck(Formatter, Source);
+
+        Assert.Equal("using A;\n// note\nusing   B;\nusing C;\n\nnamespace N { }\n", once);
+    }
 }
