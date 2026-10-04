@@ -93,9 +93,8 @@ internal static class BenchmarkRunner
         CopyDirectory(checkout, workingCopy);
         try
         {
-            // A repository's global.json can pin an SDK that is not installed here; the installed SDK is used instead.
-            string globalJson = Path.Combine(workingCopy, "global.json");
-            if (File.Exists(globalJson))
+            // A repository's global.json files can pin an SDK that is not installed here; the installed SDK is used instead.
+            foreach (string globalJson in Directory.EnumerateFiles(workingCopy, "global.json", SearchOption.AllDirectories))
             {
                 File.Delete(globalJson);
             }

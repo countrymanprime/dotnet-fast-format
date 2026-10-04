@@ -22,6 +22,12 @@ with no solution file shows `n/a` for `dotnet-format`; a tool that errors shows 
 `--output DIR` also writes `baseline.md` and `baseline.json`. The default is 3 runs; the report shows
 the median and the min–max range. Working files live in `.bench/` (git-ignored).
 
+The harness adjusts the environment so the comparison is about formatting, not setup: every `global.json` in a
+working copy is deleted (the installed SDK is used), Windows targeting is enabled, and NuGet audit is off for
+restores. Working copies live in the system temp directory, never inside this repository, because MSBuild
+and `.editorconfig` lookups search upward and would otherwise pick up this repository's own settings.
+`DOTNET_FAST_FORMAT_BENCH_DIR` overrides that directory.
+
 Timings depend on the machine, so compare numbers only from the same environment. The report records
 the OS, processor count, SDK version, tool versions and the commit it ran from. The
 `Benchmarks` workflow runs it on a GitHub-hosted runner.

@@ -6,7 +6,7 @@ namespace DotnetFastFormat.Benchmarks;
 /// <summary>Runs a command and measures it.</summary>
 internal static class ProcessRunner
 {
-    private const int TailLines = 5;
+    private const int TailLines = 12;
 
     /// <summary>Runs <paramref name="spec"/> and waits for it, killing it after <paramref name="timeout"/>.</summary>
     /// <exception cref="TimeoutException">The process did not finish in time.</exception>
@@ -30,6 +30,10 @@ internal static class ProcessRunner
 
         // Some corpus repositories target Windows-only frameworks; allow restoring them on Linux.
         startInfo.Environment["EnableWindowsTargeting"] = "true";
+
+        // A repository that treats warnings as errors fails to restore when a vulnerability advisory is published
+        // after its release. That says nothing about formatting speed, so the audit is off for the benchmark.
+        startInfo.Environment["NuGetAudit"] = "false";
 
         var lines = new ConcurrentQueue<string>();
         void Remember(object? sender, DataReceivedEventArgs e)
