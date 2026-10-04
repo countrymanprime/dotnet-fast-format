@@ -8,6 +8,9 @@
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="DotnetFastFormat.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../DotnetFastFormat.Core/DotnetFastFormat.Core.csproj" />
   </ItemGroup>
 </Project>

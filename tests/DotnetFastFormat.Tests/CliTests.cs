@@ -36,13 +36,13 @@ public class CliTests
     }
 
     [Fact]
-    public void NotYetImplementedExitsTwo()
+    public void NoPathsIsAnError()
     {
-        var (code, output, error) = Run("some/file.cs");
+        var (code, output, error) = Run();
 
         Assert.Equal(2, code);
         Assert.Equal(string.Empty, output);
-        Assert.Contains("not implemented", error, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("No paths", error, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class CliTests
         var (code, _, error) = Run("--", "-odd.cs");
 
         Assert.Equal(2, code);
-        Assert.Contains("not implemented", error, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("-odd.cs", error, StringComparison.Ordinal);
     }
 
     [Fact]

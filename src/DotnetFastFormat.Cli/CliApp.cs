@@ -1,11 +1,12 @@
 using System.CommandLine;
+using DotnetFastFormat.Core;
 
 namespace DotnetFastFormat.Cli;
 
 /// <summary>The <c>dotnet fast-format</c> command line.</summary>
 /// <remarks>
 /// Exit codes: 0 success, 1 a file would change (<c>--check</c>, not yet implemented), 2 an error.
-/// An error never modifies an input (requirements CLI-001 and CLI-003 in <c>docs/requirements/core.md</c>).
+/// A file that fails is never modified, and the other files are still processed (requirements CLI-001 and CLI-003 in <c>docs/requirements/core.md</c>).
 /// </remarks>
 public static class CliApp
 {
@@ -17,7 +18,17 @@ public static class CliApp
     /// <param name="output">Receives normal output, such as help text.</param>
     /// <param name="error">Receives error messages.</param>
     /// <returns>The process exit code.</returns>
-    public static int Run(string[] args, TextWriter output, TextWriter error)
+    public static int Run(string[] args, TextWriter output, TextWriter error) =>
+        Run(args, output, error, new RoslynFormatter(), new DiskFileStore());
+
+    /// <summary>Runs the command line with the given formatter and file store.</summary>
+    /// <param name="args">Command-line arguments.</param>
+    /// <param name="output">Receives normal output, such as help text.</param>
+    /// <param name="error">Receives error messages.</param>
+    /// <param name="formatter">The formatter to apply.</param>
+    /// <param name="store">Where files are read and written.</param>
+    /// <returns>The process exit code.</returns>
+    internal static int Run(string[] args, TextWriter output, TextWriter error, IFormatter formatter, IFileStore store)
     {
         var paths = new Argument<string[]>("paths")
         {
@@ -45,11 +56,7 @@ public static class CliApp
 
         var root = new RootCommand("Fast, .editorconfig-aware C# formatter");
         root.Arguments.Add(paths);
-        root.SetAction(_ =>
-        {
-            error.WriteLine("Formatting is not implemented yet.");
-            return ErrorExitCode;
-        });
+        root.SetAction(parse => FormatFiles(parse.GetValue(paths) ?? [], new FileProcessor(formatter, store), output, error));
 
         try
         {
@@ -71,5 +78,43 @@ public static class CliApp
             error.WriteLine($"Error: {ex.Message}");
             return ErrorExitCode;
         }
+    }
+
+    private static int FormatFiles(string[] paths, FileProcessor processor, TextWriter output, TextWriter error)
+    {
+        if (paths.Length == 0)
+        {
+            error.WriteLine("No paths given. Pass files or directories to format, or --help.");
+            return ErrorExitCode;
+        }
+
+        var errors = new List<string>();
+        List<string> files = PathExpander.Expand(paths, errors);
+        int formatted = 0;
+        int unchanged = 0;
+        foreach (string file in files)
+        {
+            (FileOutcome outcome, string message) = processor.Process(file);
+            switch (outcome)
+            {
+                case FileOutcome.Formatted:
+                    formatted++;
+                    break;
+                case FileOutcome.Unchanged:
+                    unchanged++;
+                    break;
+                default:
+                    errors.Add($"{file}: {message}");
+                    break;
+            }
+        }
+
+        foreach (string message in errors)
+        {
+            error.WriteLine(message);
+        }
+
+        output.WriteLine($"Formatted {formatted} file(s), {unchanged} unchanged, {errors.Count} failed.");
+        return errors.Count == 0 ? 0 : ErrorExitCode;
     }
 }
