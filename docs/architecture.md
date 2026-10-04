@@ -50,7 +50,8 @@ src/DotnetFastFormat.Core/       doc IR, printer, per-node builders, trivia hand
 src/DotnetFastFormat.Config/     .editorconfig resolution and option mapping
 src/DotnetFastFormat.Cli/        the dotnet tool: arguments, file discovery, exit codes
 tests/                           golden fixtures (Verify), invariant helper, corpus run
-benchmarks/                      BenchmarkDotNet project, outside the test gate
+tests/DotnetFastFormat.Corpus/   pinned corpus manifest and fetch step, shared by tests and benchmarks
+benchmarks/                      speed harness that times other formatters on the corpus, outside the test gate
 ```
 
 Core has no dependency on the CLI or on file I/O, so the printer can be tested with in-memory

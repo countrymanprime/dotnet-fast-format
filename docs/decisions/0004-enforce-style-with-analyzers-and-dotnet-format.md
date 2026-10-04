@@ -66,3 +66,8 @@ Revisit when the formatter can format itself, or when StyleCop ships a stable 1.
 
 `SA1101` (prefix local calls with `this`) is also disabled: it contradicts `dotnet_style_qualification_*`
 = `false` in `.editorconfig`, which `dotnet format` enforces (`IDE0003`). The repository style is no `this.`.
+
+## Amendment 2026-10-04
+
+The benchmark harness (`benchmarks/`) gets the same exemption as `tests/`: StyleCop's documentation rules and
+`SA0001` are off, and no XML documentation file is generated. It is not public API.

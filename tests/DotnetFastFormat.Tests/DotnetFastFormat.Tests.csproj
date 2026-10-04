@@ -24,5 +24,6 @@
     <ProjectReference Include="../../src/DotnetFastFormat.Core/DotnetFastFormat.Core.csproj" />
     <ProjectReference Include="../../src/DotnetFastFormat.Cli/DotnetFastFormat.Cli.csproj" />
     <ProjectReference Include="../DotnetFastFormat.Corpus/DotnetFastFormat.Corpus.csproj" />
+    <ProjectReference Include="../../benchmarks/DotnetFastFormat.Benchmarks/DotnetFastFormat.Benchmarks.csproj" />
   </ItemGroup>
 </Project>

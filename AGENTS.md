@@ -18,6 +18,7 @@ formatter yet (the tests use an identity formatter) and the CLI is a skeleton: `
 | Slow tier (network, corpus) | `dotnet test -p:TestTier=slow` |
 | Every test | `dotnet test -p:TestTier=all` |
 | Full gate (what CI runs on a PR) | `dotnet test` |
+| Benchmarks (not in the gate) | `dotnet run --project benchmarks/DotnetFastFormat.Benchmarks -c Release -- --output .bench/results` |
 | Style check (second CI job) | `dotnet format DotnetFastFormat.slnx --verify-no-changes` |
 | Fix style | `dotnet format DotnetFastFormat.slnx` |
 

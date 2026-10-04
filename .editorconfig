@@ -33,7 +33,8 @@ dotnet_diagnostic.SA1633.severity = none
 # Contradicts dotnet_style_qualification_* = false above, which dotnet format enforces (IDE0003).
 dotnet_diagnostic.SA1101.severity = none
 
-[tests/**.cs]
-# Tests are not public API, so StyleCop's documentation rules are off for them. They stay on in src.
+[{tests,benchmarks}/**.cs]
+# Tests and the benchmark harness are not public API, so StyleCop's documentation rules are off for them.
+# They stay on in src.
 dotnet_analyzer_diagnostic.category-StyleCop.CSharp.DocumentationRules.severity = none
 dotnet_diagnostic.SA0001.severity = none

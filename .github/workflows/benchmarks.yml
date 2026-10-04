@@ -1,0 +1,49 @@
+# Formatting speed baseline (T-006, ADR 0006): times dotnet format and CSharpier on the pinned corpus.
+# Not part of the PR gate. Runs on demand, and on pull requests that change the harness or the corpus.
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "benchmarks/**"
+      - "corpus/**"
+      - "tests/DotnetFastFormat.Corpus/**"
+      - ".github/workflows/benchmarks.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmarks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  baseline:
+    name: formatting speed baseline (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - uses: actions/cache@v6
+        with:
+          path: .corpus
+          key: corpus-${{ runner.os }}-${{ hashFiles('corpus/corpus.json') }}
+      - name: Run the benchmarks
+        run: dotnet run --project benchmarks/DotnetFastFormat.Benchmarks -c Release -- --output .bench/results
+      - name: Publish the report
+        if: always()
+        run: |
+          if [ -f .bench/results/baseline.md ]; then cat .bench/results/baseline.md >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: baseline
+          path: .bench/results

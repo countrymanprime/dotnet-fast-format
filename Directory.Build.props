@@ -9,7 +9,7 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
-  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests'))">
+  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Tests')) And !$(MSBuildProjectName.EndsWith('.Benchmarks'))">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
