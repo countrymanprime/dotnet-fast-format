@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DotnetFastFormat.Core.Printers;
 
@@ -25,6 +26,11 @@ internal static class TokenSpacing
 
         if (before is SyntaxKind.DotToken or SyntaxKind.ColonColonToken or SyntaxKind.LessThanToken
             or SyntaxKind.OpenBracketToken or SyntaxKind.OpenParenToken)
+        {
+            return false;
+        }
+
+        if (before is SyntaxKind.MinusToken or SyntaxKind.PlusToken && previous.Parent is PrefixUnaryExpressionSyntax)
         {
             return false;
         }

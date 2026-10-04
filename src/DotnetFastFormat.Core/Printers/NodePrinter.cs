@@ -17,6 +17,7 @@ internal static class NodePrinter
         {
             UsingDirectiveSyntax or ExternAliasDirectiveSyntax => builder.Tokens(node),
             BaseNamespaceDeclarationSyntax ns => NamespacePrinter.Print(ns, builder),
+            TypeDeclarationSyntax type => TypePrinter.Print(type, builder),
             _ => null,
         };
 

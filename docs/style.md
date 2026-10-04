@@ -36,3 +36,26 @@ The rule depends on the kind of the two neighbours, not on how they wrap:
   body, event without accessors, top-level statement}: the author's choice, none or one.
 - Any other pair: exactly one blank line.
 - None before the first or after the last item in a block.
+
+## Type declarations
+
+Classes, structs, interfaces and records (including `record struct`).
+
+- Modifiers, keyword, name and type parameters are separated by single spaces; no space inside `<...>`, and one
+  after each comma.
+- The base list is `: A, B` on the header line. When the header (name, type parameters, parameters, base list and
+  constraints) is longer than 100 columns, every base type goes on its own line, indented one level, after
+  `Name :`.
+- Constraint clauses follow on the same line when everything fits, and otherwise each `where` clause is on its
+  own line, indented one level, after the base list.
+- An empty body prints `{ }` on the header's last line, or on its own line below a header that wrapped.
+- A non-empty body puts `{` and `}` on their own lines; members are indented one level and separated by the
+  blank-line rule above.
+- A record with a parameter list (positional record) prints the list like method parameters: `(int A, int B)` on
+  one line when it fits, otherwise one parameter per line, with `)` on its own line. A record without a body ends
+  in `;`.
+- Parameter defaults print only when they are a literal, a name, a member access or a signed number; a record with
+  any other default is kept as written, and so is a type with attributes, a primary-constructor base call
+  (`: Base(x)`) or attributes on a type parameter.
+- Members are kept as written until their printer exists; only the first line of a kept member is re-indented, its
+  later lines keep the indentation they had.

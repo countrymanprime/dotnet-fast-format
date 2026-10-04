@@ -9,7 +9,7 @@ namespace My.App
 {
     using System.IO;
 
-    class A {}
+    class A { }
 
     class B { }
 }
