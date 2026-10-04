@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The pinned corpus: manifest, validation and the git fetch step. Shared by the tests and the benchmarks. -->
+</Project>

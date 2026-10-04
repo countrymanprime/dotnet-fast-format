@@ -1,0 +1,46 @@
+# The checks every change must pass: the gate from ADR 0003 (`dotnet test`, which includes the
+# analyzers) and the style check from ADR 0004. Called by pull-request.yml before merge and by
+# main.yml after it, so both run exactly the same thing.
+name: Checks
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DiffEngine_Disabled: true
+
+jobs:
+  test:
+    # Shown on a pull request as "checks / dotnet test (<os>)" (the calling job is named `checks`).
+    name: dotnet test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Test
+        run: dotnet test
+
+  format:
+    # Whitespace and .editorconfig style (ADR 0004). Analyzer rules already run in `dotnet test`.
+    name: dotnet format
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Verify formatting
+        run: dotnet format DotnetFastFormat.slnx --verify-no-changes

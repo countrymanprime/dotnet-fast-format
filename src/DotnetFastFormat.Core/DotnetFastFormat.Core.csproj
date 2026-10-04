@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Doc IR, printer and per-node builders land here from M1. No file I/O, no CLI dependency. -->
+</Project>

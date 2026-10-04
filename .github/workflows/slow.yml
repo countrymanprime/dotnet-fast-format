@@ -1,0 +1,51 @@
+# The Slow test tier (ADR 0005): tests that need the network or large inputs, such as fetching
+# the pinned corpus. They are excluded from the PR gate, so this workflow is what runs them.
+# A failure here is a blocker, not a flake.
+name: Slow tests
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    # A change to a pin or to the fetch step is checked in its own PR.
+    paths:
+      - "corpus/**"
+      - "tests/DotnetFastFormat.Tests/Corpus/**"
+      - "tests/DotnetFastFormat.Corpus/**"
+      - ".github/workflows/slow.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: slow-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DiffEngine_Disabled: true
+
+jobs:
+  slow:
+    name: dotnet test slow (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - uses: actions/cache@v6
+        with:
+          path: .corpus
+          key: corpus-${{ runner.os }}-${{ hashFiles('corpus/corpus.json') }}
+      - name: Test (slow tier)
+        run: dotnet test -p:TestTier=slow

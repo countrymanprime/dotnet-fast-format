@@ -1,0 +1,21 @@
+# Runs after a change merges to main: the same checks as a pull request, so a merge that
+# interacts badly with another one is caught. Post-merge jobs that only make sense on main
+# (the pinned-formatter dogfood check, the corpus revision diff) are added here later. The slow
+# tier runs from slow.yml and the benchmarks from benchmarks.yml.
+name: Main
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: main-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
