@@ -18,3 +18,5 @@ Terms used across these docs, each with a link to its source definition.
 | **Conventional Commits** | Commit message convention (`feat:`, `fix:`, `docs:`) used in this repo | [conventionalcommits.org](https://www.conventionalcommits.org/en/v1.0.0/) |
 | **BenchmarkDotNet** | The .NET benchmarking library planned for the performance project | [benchmarkdotnet.org](https://benchmarkdotnet.org/) |
 | **Mermaid** | Text-based diagram syntax that GitHub renders in Markdown | [mermaid.js.org](https://mermaid.js.org/) |
+| **Verbatim fallback** | Emitting a syntax node's original source text because it has no printer yet or carries a comment or directive | [ADR 0008](decisions/0008-print-unsupported-syntax-verbatim.md) |
+| **Self-check** | Re-parsing the formatter's output and comparing it with the input before the file is written | [ADR 0009](decisions/0009-self-check-output-before-writing.md) |

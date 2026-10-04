@@ -119,8 +119,10 @@ plus idempotency and tree-equivalence checks), a stability policy for stable out
 ## Open questions
 
 1. **Default style.** When no `.editorconfig` key applies, does output follow `dotnet format`
-   defaults, CSharpier's style, or something else? UNRESOLVED
-2. **Preprocessor strategy.** Format per branch, skip regions, or run a multi-symbol pass? UNRESOLVED
+   defaults, CSharpier's style, or something else? Recommendation in
+   [ADR 0007](decisions/0007-default-style-is-microsoft-conventions-at-100-columns.md) (Proposed). UNRESOLVED
+2. **Preprocessor strategy.** Format per branch, skip regions, or run a multi-symbol pass? Until M3,
+   nodes with directives print verbatim ([ADR 0008](decisions/0008-print-unsupported-syntax-verbatim.md)). UNRESOLVED
 3. **Name of the command and tool package.** `dotnet fast-format` is proposed; confirm. UNRESOLVED
 4. **Target framework and AOT.** Which .NET versions to support, and whether Roslyn syntax-only
    packages permit Native AOT (a related project reported AOT failures with Roslyn Workspaces,

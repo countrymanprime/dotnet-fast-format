@@ -16,7 +16,10 @@ Priority: Must / Should / Could. IDs are stable and never reused.
 | FMT-004 | If a file fails to parse, then the formatter shall leave it unchanged and report an error. | Must | Format a file with a syntax error. | `Cli.ParseErrorLeavesFileUntouched` (M1) |
 | FMT-005 | The formatter shall produce output that parses with no new diagnostics. | Must | Parse output; compare diagnostics. | `Invariants.ValidOutput` (M0) |
 | FMT-006 | The formatter shall not reflow the contents of verbatim, interpolated or raw string literals. | Must | Fixtures for each literal kind. | `tests/golden/strings/*` (M2) |
-| FMT-007 | The formatter shall preserve a file's BOM and its line-ending style unless `.editorconfig` sets `end_of_line`. | Should | Fixtures with BOM and CRLF/LF. | `tests/golden/encoding/*` (M4) |
+| FMT-007 | The formatter shall preserve a file's BOM and its line-ending style unless `.editorconfig` sets `end_of_line`. | Should | Fixtures with BOM and CRLF/LF. | `tests/golden/encoding/*` (M4; M1 already preserves both, see T-106) |
+| FMT-008 | When a syntax node kind has no printer yet, the formatter shall emit that node's source text unchanged. | Must | A file mixing a supported declaration with an unsupported statement. | `Formatter.UnsupportedNodesAreVerbatim` (M1; [ADR 0008](../decisions/0008-print-unsupported-syntax-verbatim.md)) |
+| FMT-009 | While trivia handling is not implemented, when a node's leading or trailing trivia contains a comment or a preprocessor directive, the formatter shall emit that node's source text unchanged. | Must | A member with a comment before it, inside it and after it. | `Formatter.NodesWithCommentsAreVerbatim` (M1; removed when M3 lands) |
+| FMT-010 | Before writing a file, the formatter shall re-parse its output and, if the tokens, comments or directives differ from the input's or the output has new syntax errors, leave the file unchanged and exit 2. | Should | A deliberately broken formatter. | `Cli.SelfCheckBlocksBadOutput` (M1; [ADR 0009](../decisions/0009-self-check-output-before-writing.md)) |
 
 ## Configuration (CFG)
 
@@ -34,6 +37,8 @@ Priority: Must / Should / Could. IDs are stable and never reused.
 | CLI-002 | When `--stdin` is set, the formatter shall read source from stdin and write the result to stdout. | Must | Pipe a buffer. | `Cli.StdinToStdout` (M6) |
 | CLI-003 | If an error occurs for an input, then the formatter shall exit 2 and modify nothing for that input. | Must | Unreadable path, parse error. | `Cli.ErrorExitCode` (M1) |
 | CLI-004 | The formatter shall not require an MSBuild project, solution or restore to run. | Must | Format a folder of loose `.cs` files. | `Cli.NoProjectNeeded` (M1) |
+| CLI-005 | The formatter shall write each changed file atomically, so an interrupted or failed run never leaves a partly written file. | Must | Fail the write of the second of two files. | `Cli.WritesAreAtomic` (M1) |
+| CLI-006 | The formatter shall format each `.cs` file named on the command line and every `.cs` file under each named directory. | Must | A folder tree with `.cs` and other files. | `Cli.DiscoversCSharpFiles` (M1) |
 
 ## Performance (PERF)
 
