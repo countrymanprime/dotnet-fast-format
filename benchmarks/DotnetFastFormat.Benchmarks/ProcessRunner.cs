@@ -32,8 +32,9 @@ internal static class ProcessRunner
         startInfo.Environment["EnableWindowsTargeting"] = "true";
 
         // A repository that treats warnings as errors fails to restore when a vulnerability advisory is published
-        // after its release. That says nothing about formatting speed, so the audit is off for the benchmark.
-        startInfo.Environment["NuGetAudit"] = "false";
+        // after its release. That says nothing about formatting speed, so audit warnings are not errors here.
+        // Audit itself stays on: some repositories (Humanizer) verify that it ran.
+        startInfo.Environment["WarningsNotAsErrors"] = "NU1901;NU1902;NU1903;NU1904";
 
         var lines = new ConcurrentQueue<string>();
         void Remember(object? sender, DataReceivedEventArgs e)
