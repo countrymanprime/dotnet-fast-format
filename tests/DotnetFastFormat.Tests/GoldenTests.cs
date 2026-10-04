@@ -4,7 +4,7 @@ namespace DotnetFastFormat.Tests;
 
 /// <summary>
 /// Formats every <c>golden/**/*.in.cs</c> fixture, checks the invariants, and snapshots the output
-/// with Verify. The formatter is the identity until milestone M1 lands the real one.
+/// with Verify. Everything is verbatim until the per-node builders land.
 /// </summary>
 public class GoldenTests
 {
@@ -29,7 +29,7 @@ public class GoldenTests
     public Task Formats(string fixture)
     {
         string source = File.ReadAllText(Path.Combine(Root, fixture));
-        string output = Invariants.FormatAndCheck(TestFormatters.Identity, source);
+        string output = Invariants.FormatAndCheck(new RoslynFormatter(), source);
         string name = fixture[..^".in.cs".Length];
         return Verify(output, "cs")
             .UseDirectory(Path.GetDirectoryName(Path.Combine("golden", fixture))!)
