@@ -35,7 +35,7 @@ flowchart LR
 | Stage | Responsibility |
 |---|---|
 | Resolve settings | Walk up from the file to find `.editorconfig` files, nearest first, stop at `root = true`; map keys to formatter options |
-| Parse | `Microsoft.CodeAnalysis.CSharp` syntax tree for the latest language version; a parse error stops the file |
+| Parse | `Microsoft.CodeAnalysis.CSharp` syntax tree at `LanguageVersion.Preview` (a superset of the latest released version), one shared setting for the formatter and the output check; a parse error stops the file |
 | Attach trivia | Decide which node owns each comment, blank line and directive so none is lost or moved across code |
 | Build Doc IR | One builder per syntax node kind (the [Prettier-style document tree](https://github.com/prettier/prettier/blob/main/commands.md); see the [glossary](glossary.md)), composed from printer primitives (group, indent, line, softline, fill) |
 | Print | Lay the Doc IR out to `max_line_length` and the indent settings |
