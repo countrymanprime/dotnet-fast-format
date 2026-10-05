@@ -23,5 +23,6 @@ This folder records significant architecture and design decisions as
 | [0009](0009-self-check-output-before-writing.md) | Check the output before writing a file | Accepted (provisional) | 2026-10-04 |
 | [0010](0010-keep-comments-at-node-boundaries.md) | Keep comments at node boundaries and copy every other position verbatim | Accepted (provisional) | 2026-10-05 |
 | [0011](0011-format-the-no-symbols-parse-and-keep-directives-as-lines.md) | Format the no-symbols parse and keep preprocessor directives as lines | Accepted (provisional) | 2026-10-05 |
+| [0012](0012-read-editorconfig-with-a-small-parser-in-core.md) | Read `.editorconfig` with a small parser in Core and support seven keys | Accepted (provisional) | 2026-10-05 |
 | [0013](0013-lay-out-statements-and-expressions-with-groups.md) | Lay out statements and expressions with groups, leading operators and last-argument hugging | Accepted (provisional) | 2026-10-05 |
 | [0014](0014-statements-and-expressions-reuse-the-trivia-model.md) | Statements and expressions reuse the trivia model; copy per statement or per expression | Accepted (provisional) | 2026-10-05 |
