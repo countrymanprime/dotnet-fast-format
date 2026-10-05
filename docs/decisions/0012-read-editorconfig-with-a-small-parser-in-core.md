@@ -49,10 +49,10 @@ For the way the files are read:
 **Option 1**, hand-written, in `src/DotnetFastFormat.Core/Config/`. The format is a dozen lines of rules, and
 the glob dialect is a page; both are covered by a table of examples from the specification. A package would add a
 dependency for code that is about as small as the glue needed to adapt it, and `AnalyzerConfig` follows Roslyn's
-own variant of the rules, so it cannot be relied on for the specification's `root`, `unset` and override behavior. The parser and matcher do no allocation per
-character on the hot path (spans over the text, one compiled matcher per section, built once per file); the lookup is cached
-(below). Core stays free of file I/O: the resolver takes a function that reads a path, so tests run in memory
-and the CLI supplies the disk.
+own variant of the rules, so it cannot be relied on for the specification's `root`, `unset` and override behavior.
+The parser reads spans of the text without allocating per character, each section's glob is compiled once per file, and
+the lookup is cached (below). Core stays free of file I/O: the resolver takes a function that reads a path, so tests
+run in memory and the CLI supplies the disk.
 
 ### Lookup and precedence
 
@@ -68,6 +68,14 @@ configuration above it.
 Resolved options are computed per file from the cached, already parsed files: matching a file name against a few
 compiled section globs is cheap, and a cache keyed by directory alone would be wrong because sections can match
 a file name (`[Program.cs]`).
+
+Glob details where the specification leaves room: matching is case-sensitive; `[a-z]` ranges work inside brackets
+and a `/` inside brackets does not count as a separator; `**/` has no special meaning, so `[**/*.cs]` needs a
+directory below the `.editorconfig` and does not match a file next to it, while `[*.cs]` and `[**.cs]` do; `{n..m}`
+matches an integer written without leading zeros and needs `n < m`, any other braces with no comma are literal; a
+leading `/` is dropped when the name has a separator. A name longer than 4,096 characters, nested alternations more
+than 32 deep, or alternations that expand to more than 1,024 patterns are not matched (with a warning, below).
+Matching remembers the states that failed, so a pattern such as `*a*a*a*b` cannot take exponential time.
 
 ### Supported keys
 
@@ -96,16 +104,17 @@ of 0 are invalid for the same reason.
 
 A supported key with a value outside the table is **ignored with one warning on stderr** and the run
 continues; the exit code does not change (CFG-010). The warning names the file and line, for example
-`warning: /repo/.editorconfig(12): indent_size = abc is not a whole number from 1 to 256; ignored`. It is printed only
-for an assignment that applies to a file being formatted, and once per run. Failing the run instead was
+`warning: /repo/.editorconfig(12): indent_size = abc is not a whole number from 1 to 256, or tab; ignored`. It is
+printed only for an assignment that applies to a file being formatted, and once per run. Failing the run instead was
 considered and rejected: the tool formats code and is not a configuration linter, the editors the team already
 uses ignore the same values, and a typo in a section for another language must not block a build.
 
 A `.editorconfig` that cannot be read (an `IOException`, a permissions error) produces one warning, is treated as
 absent, and the search continues in the parent directory (CFG-011). Invalid UTF-8 inside it is decoded leniently.
-A line that is not blank, a comment, a section header or a pair is skipped. Nothing in the parser or matcher throws;
-a section name that is too complex for the matcher (an alternation that expands to more than 1,024 patterns) is
-skipped with a warning.
+A line that is not blank, a comment, a section header or a pair is skipped with a warning. Nothing in the parser or
+matcher throws; a section name that is too long or too complex for the matcher is skipped with a warning. These
+warnings, like the unreadable-file one, are printed for every file whose search reaches the `.editorconfig`, once per
+run.
 
 ### Tabs and the printer
 
