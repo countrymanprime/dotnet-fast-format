@@ -310,6 +310,80 @@ public class DocPrinterTests
         Assert.Equal(10_000, output.Count(c => c == '('));
     }
 
+    public void TabIndentationWritesOneTabPerLevelWhenTheTabWidthIsTheIndentSize()
+    {
+        Doc doc = Docs.Concat(
+            Docs.Text("a"),
+            Docs.Indent(Docs.Concat(Docs.HardLine, Docs.Text("b"), Docs.Indent(Docs.Concat(Docs.HardLine, Docs.Text("c"))))));
+
+        Assert.Equal("a\n\tb\n\t\tc", PrintWithTabs(doc, indentSize: 4, tabWidth: 4));
+    }
+
+    [Theory]
+    [InlineData(4, 3, "a\n\t b\n\t\t  c")]
+    [InlineData(8, 4, "a\n\t\tb\n\t\t\t\tc")]
+    [InlineData(2, 4, "a\n  b\n\tc")]
+    public void TabIndentationFillsWithTabsAndThenSpaces(int indentSize, int tabWidth, string expected)
+    {
+        Doc doc = Docs.Concat(
+            Docs.Text("a"),
+            Docs.Indent(Docs.Concat(Docs.HardLine, Docs.Text("b"), Docs.Indent(Docs.Concat(Docs.HardLine, Docs.Text("c"))))));
+
+        Assert.Equal(expected, PrintWithTabs(doc, indentSize, tabWidth));
+    }
+
+    [Fact]
+    public void ATabCountsAsTheTabWidthWhenFitting()
+    {
+        Doc doc = Docs.Concat(Docs.Text("a"), Docs.Indent(Docs.Concat(Docs.HardLine, Words("aaaa", "bbbb"))));
+
+        // The indent is one tab of 4 columns, so the 9-column group ends at column 13.
+        Assert.Equal("a\n\taaaa bbbb", PrintWithTabs(doc, indentSize: 4, tabWidth: 4, width: 13));
+        Assert.Equal("a\n\taaaa\n\tbbbb", PrintWithTabs(doc, indentSize: 4, tabWidth: 4, width: 12));
+    }
+
+    [Fact]
+    public void ATabCountsAsTheConfiguredTabWidth()
+    {
+        Doc doc = Docs.Concat(Docs.Text("a"), Docs.Indent(Docs.Concat(Docs.HardLine, Words("aaaa", "bbbb"))));
+
+        Assert.Equal("a\n\taaaa bbbb", PrintWithTabs(doc, indentSize: 8, tabWidth: 8, width: 17));
+        Assert.Equal("a\n\taaaa\n\tbbbb", PrintWithTabs(doc, indentSize: 8, tabWidth: 8, width: 16));
+    }
+
+    [Fact]
+    public void AColumnZeroDocAfterTabIndentationStartsAtColumnZero()
+    {
+        Doc doc = Docs.Concat(
+            Docs.Text("x"),
+            Docs.Indent(Docs.Concat(
+                Docs.HardLine,
+                Docs.ColumnZero(Docs.Concat(Docs.Text("ab "), Words("cc", "dd"))),
+                Docs.HardLine,
+                Docs.Text("y"))));
+
+        // "ab cc dd" is exactly 8 columns; it only fits if trimming the tab put the column back to 0.
+        Assert.Equal("x\nab cc dd\n\ty", PrintWithTabs(doc, indentSize: 4, tabWidth: 4, width: 8));
+    }
+
+    [Fact]
+    public void TrailingIndentationIsRemovedBeforeALineBreakWithTabsToo() =>
+        Assert.Equal(
+            "a\n\n\tb",
+            PrintWithTabs(
+                Docs.Concat(Docs.Text("a"), Docs.Indent(Docs.Concat(Docs.HardLine, Docs.HardLine, Docs.Text("b")))),
+                indentSize: 4,
+                tabWidth: 4));
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void ATabWidthBelowOneIsRejected(int tabWidth) =>
+        Assert.Throws<ArgumentOutOfRangeException>(() => new DocPrintOptions(tabWidth: tabWidth));
+
+    private static string PrintWithTabs(Doc doc, int indentSize, int tabWidth, int width = 20) =>
+        DocPrinter.Print(doc, new DocPrintOptions(width, indentSize, "\n", useTabs: true, tabWidth: tabWidth));
+
     private static string Print(Doc doc, int width = 20, int indentSize = 4, string newLine = "\n") =>
         DocPrinter.Print(doc, new DocPrintOptions(width, indentSize, newLine));
 

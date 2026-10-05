@@ -363,10 +363,12 @@ internal static class DocPrinter
 
         public void TrimLineIndent()
         {
+            // Only indentation and the spaces the printer writes can sit between the barrier and here, so a tab
+            // is one of the printer's own and counts for the tab width.
             while (Output.Length > trimBarrier && Output[^1] is ' ' or '\t')
             {
+                Position -= Output[^1] == '\t' ? Options.TabWidth : 1;
                 Output.Length--;
-                Position--;
             }
         }
 
@@ -399,7 +401,19 @@ internal static class DocPrinter
 
             Output.Append(Options.NewLine);
             Position = command.Indent * Options.IndentSize;
-            Output.Append(' ', Position);
+            AppendIndentation(Position);
+        }
+
+        private void AppendIndentation(int columns)
+        {
+            if (!Options.UseTabs)
+            {
+                Output.Append(' ', columns);
+                return;
+            }
+
+            Output.Append('\t', columns / Options.TabWidth);
+            Output.Append(' ', columns % Options.TabWidth);
         }
     }
 }
