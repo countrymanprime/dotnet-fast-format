@@ -33,5 +33,7 @@ internal static partial class TestFormatters
     internal sealed class Delegate(Func<string, string> format) : IFormatter
     {
         public string Format(string source) => format(source);
+
+        public string Format(string source, FormatOptions options) => format(source);
     }
 }
