@@ -62,17 +62,24 @@ internal static class TypePrinter
         return declaration;
     }
 
-    private static Doc Finish(TypeDeclarationSyntax type, Doc declaration, NodeBuilder builder)
+    private static Doc? Finish(TypeDeclarationSyntax type, Doc declaration, NodeBuilder builder)
     {
         if (type.OpenBraceToken.IsKind(SyntaxKind.None))
         {
             return Docs.Concat(Docs.Group(declaration), builder.Token(type.SemicolonToken));
         }
 
+        LeadingTrivia? closing = TriviaLines.ParseLeading(type.CloseBraceToken.LeadingTrivia, atEndOfFile: false);
+        if (closing is null)
+        {
+            builder.Reject();
+            return null;
+        }
+
         Doc open = builder.Token(type.OpenBraceToken);
-        Doc close = builder.Token(type.CloseBraceToken);
+        Doc close = builder.Token(type.CloseBraceToken, leadingHandled: true);
         Doc semicolon = type.SemicolonToken.IsKind(SyntaxKind.None) ? Docs.Empty : builder.Token(type.SemicolonToken);
-        if (type.Members.Count == 0)
+        if (type.Members.Count == 0 && closing.Lines.Count == 0)
         {
             // An empty body stays on the header's last line, or goes on its own line when the header wrapped.
             Doc empty = Docs.Concat(open, Docs.Text(" "), close, semicolon);
@@ -85,7 +92,7 @@ internal static class TypePrinter
             Docs.Group(declaration),
             Docs.HardLine,
             open,
-            Docs.Indent(Docs.Concat(Docs.HardLine, MemberList.Print([.. type.Members]))),
+            Docs.Indent(Docs.Concat(Docs.HardLine, MemberList.Print([.. type.Members], closing))),
             Docs.HardLine,
             close,
             semicolon);

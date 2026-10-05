@@ -38,6 +38,7 @@ internal static class DocPrinter
             Step(command, commands, state);
         }
 
+        state.FlushSuffix();
         return state.Output.ToString();
     }
 
@@ -72,6 +73,10 @@ internal static class DocPrinter
 
             case FillDoc fill:
                 PrintFill(fill, command, commands, state.Options.Width - state.Position);
+                break;
+
+            case LineSuffixDoc suffix:
+                state.PendingSuffix += suffix.Text;
                 break;
 
             case ColumnZeroDoc columnZero:
@@ -289,6 +294,15 @@ internal static class DocPrinter
 
         public int Position { get; set; }
 
+        public string PendingSuffix { get; set; } = string.Empty;
+
+        public void FlushSuffix()
+        {
+            Output.Append(PendingSuffix);
+            Position += PendingSuffix.Length;
+            PendingSuffix = string.Empty;
+        }
+
         public void TrimLineIndent()
         {
             while (Output.Length > trimBarrier && Output[^1] is ' ' or '\t')
@@ -319,6 +333,7 @@ internal static class DocPrinter
                 return;
             }
 
+            FlushSuffix();
             while (Output.Length > trimBarrier && Output[^1] is ' ' or '\t')
             {
                 Output.Length--;

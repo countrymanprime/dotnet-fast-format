@@ -43,7 +43,7 @@ internal static class TriviaLines
                 return null;
             }
 
-            lines.Add(new TriviaLine(entry.Kind, entry.Text, blanks > 0));
+            lines.Add(new TriviaLine(entry.Kind, entry.Text, blanks > 0, entry.RawText));
             blanks = 0;
             lineOpen = entry.LineStaysOpen;
         }
@@ -79,24 +79,24 @@ internal static class TriviaLines
         return (true, comment);
     }
 
-    private static (TriviaLineKind Kind, string[] Text, bool LineStaysOpen)? Classify(SyntaxTrivia piece)
+    private static (TriviaLineKind Kind, string[] Text, bool LineStaysOpen, string? RawText)? Classify(SyntaxTrivia piece)
     {
         switch (piece.Kind())
         {
             case SyntaxKind.SingleLineCommentTrivia:
-                return (TriviaLineKind.Comment, [piece.ToFullString().TrimEnd()], true);
+                return (TriviaLineKind.Comment, [piece.ToFullString().TrimEnd()], true, null);
             case SyntaxKind.MultiLineCommentTrivia:
             case SyntaxKind.MultiLineDocumentationCommentTrivia:
-                return (TriviaLineKind.Comment, SplitLines(piece.ToFullString().TrimEnd(), trimIndent: false), true);
+                return (TriviaLineKind.Comment, SplitLines(piece.ToFullString().TrimEnd(), trimIndent: false), true, piece.ToFullString().TrimEnd());
             case SyntaxKind.SingleLineDocumentationCommentTrivia:
-                return (TriviaLineKind.Comment, SplitLines(piece.ToFullString().TrimEnd(), trimIndent: true), false);
+                return (TriviaLineKind.Comment, SplitLines(piece.ToFullString().TrimEnd(), trimIndent: true), false, null);
             case SyntaxKind.RegionDirectiveTrivia:
             case SyntaxKind.EndRegionDirectiveTrivia:
-                return (TriviaLineKind.Region, [piece.ToFullString().Trim()], false);
+                return (TriviaLineKind.Region, [piece.ToFullString().Trim()], false, null);
             case SyntaxKind.DisabledTextTrivia:
-                return (TriviaLineKind.DisabledText, SplitLines(RemoveFinalLineEnd(piece.ToFullString()), trimIndent: false), false);
+                return (TriviaLineKind.DisabledText, SplitLines(RemoveFinalLineEnd(piece.ToFullString()), trimIndent: false), false, RemoveFinalLineEnd(piece.ToFullString()));
             default:
-                return piece.IsDirective ? (TriviaLineKind.Directive, [piece.ToFullString().Trim()], false) : null;
+                return piece.IsDirective ? (TriviaLineKind.Directive, [piece.ToFullString().Trim()], false, null) : null;
         }
     }
 

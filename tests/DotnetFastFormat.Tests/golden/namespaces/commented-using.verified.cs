@@ -1,5 +1,5 @@
 ﻿// License header
-using   System;
+using System;
 using System.Linq; // trailing
 using System.Text;
 

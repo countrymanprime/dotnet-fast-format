@@ -6,12 +6,6 @@ namespace DotnetFastFormat.Core.Printers;
 /// <summary>What the printers may do with trivia: only whitespace is rewritten (ADR 0008).</summary>
 internal static class TriviaRules
 {
-    /// <summary>Returns whether <paramref name="token"/> carries a comment or directive on either side.</summary>
-    /// <param name="token">The token to inspect.</param>
-    /// <returns><see langword="true"/> when printing the token from its text would drop trivia.</returns>
-    public static bool CarriesCommentOrDirective(SyntaxToken token) =>
-        token.LeadingTrivia.Any(IsCommentOrDirective) || token.TrailingTrivia.Any(IsCommentOrDirective);
-
     /// <summary>Returns whether <paramref name="trivia"/> is a comment, a documentation comment, a directive or disabled text.</summary>
     /// <param name="trivia">The trivia to classify.</param>
     /// <returns><see langword="true"/> for anything other than whitespace and line ends.</returns>

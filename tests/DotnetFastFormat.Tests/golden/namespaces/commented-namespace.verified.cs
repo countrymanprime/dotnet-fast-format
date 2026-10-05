@@ -3,5 +3,5 @@
 /// <summary>Doc.</summary>
 namespace N
 {
-    class A   { }
+    class A { }
 }

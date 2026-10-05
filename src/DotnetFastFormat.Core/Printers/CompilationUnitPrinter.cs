@@ -18,6 +18,7 @@ internal static class CompilationUnitPrinter
         children.AddRange(root.AttributeLists);
         children.AddRange(root.Members);
         children.Sort((a, b) => a.SpanStart.CompareTo(b.SpanStart));
-        return Docs.Concat(MemberList.Print(children), Docs.HardLine);
+        LeadingTrivia closing = TriviaLines.ParseLeading(root.EndOfFileToken.LeadingTrivia, atEndOfFile: true)!;
+        return Docs.Concat(MemberList.Print(children, closing), Docs.HardLine);
     }
 }
