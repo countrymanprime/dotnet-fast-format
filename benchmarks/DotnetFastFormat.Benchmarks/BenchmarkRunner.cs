@@ -84,6 +84,7 @@ internal static class BenchmarkRunner
         ToolNames.DotnetFormatWhitespace => new DotnetFormatWhitespaceTool(),
         ToolNames.DotnetFormat => new DotnetFormatTool(),
         ToolNames.CSharpier => new CSharpierTool(toolsDirectory),
+        ToolNames.FastFormat => new FastFormatTool(),
         _ => throw new ArgumentException($"Unknown tool '{name}'.", nameof(name)),
     };
 

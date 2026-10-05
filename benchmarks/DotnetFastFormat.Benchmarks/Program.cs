@@ -10,6 +10,19 @@ if (options is null)
 
 try
 {
+    if (options.SelfCheckCost)
+    {
+        string table = SelfCheckCost.Run(options, Console.Error);
+        Console.Out.Write(table);
+        if (options.OutputDirectory is { } costDirectory)
+        {
+            Directory.CreateDirectory(costDirectory);
+            File.WriteAllText(Path.Combine(costDirectory, "self-check.md"), table);
+        }
+
+        return 0;
+    }
+
     BenchmarkReport report = BenchmarkRunner.Run(options, Console.Error);
     string markdown = ReportWriter.ToMarkdown(report);
     Console.Out.Write(markdown);

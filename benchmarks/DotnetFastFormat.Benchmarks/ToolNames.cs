@@ -12,6 +12,9 @@ internal static class ToolNames
     /// <summary>CSharpier.</summary>
     public const string CSharpier = "csharpier";
 
+    /// <summary>This repository's formatter, built from the current commit, with its always-on self-check.</summary>
+    public const string FastFormat = "dotnet-fast-format";
+
     /// <summary>Every tool name, in report order.</summary>
-    public static IReadOnlyList<string> All { get; } = [DotnetFormatWhitespace, DotnetFormat, CSharpier];
+    public static IReadOnlyList<string> All { get; } = [DotnetFormatWhitespace, DotnetFormat, CSharpier, FastFormat];
 }

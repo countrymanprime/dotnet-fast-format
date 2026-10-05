@@ -61,7 +61,8 @@ public static class OutputVerifier
 
     /// <summary>
     /// Code tokens and comment/directive trivia in source order, so a comment that moves across a
-    /// token changes the sequence. Each line is trimmed, so re-indenting is not a loss.
+    /// token changes the sequence. Each line is trimmed and the trivia's own line ending is ignored, so re-indenting and
+    /// adding a final newline after a directive are not losses.
     /// </summary>
     private static IEnumerable<string> CodeAndComments(SyntaxTree tree)
     {
@@ -90,5 +91,5 @@ public static class OutputVerifier
         || trivia.IsKind(SyntaxKind.MultiLineDocumentationCommentTrivia);
 
     private static string Normalize(SyntaxTrivia trivia) =>
-        string.Join('\n', trivia.ToFullString().Split('\n').Select(l => l.Trim()));
+        string.Join('\n', trivia.ToFullString().TrimEnd().Split('\n').Select(l => l.Trim()));
 }

@@ -7,11 +7,18 @@ namespace DotnetFastFormat.Benchmarks;
 /// <param name="Repositories">Repository names to measure; empty means all.</param>
 /// <param name="Tools">Tool names to measure; empty means all.</param>
 /// <param name="OutputDirectory">Where to write the report files, or null to only print.</param>
-internal sealed record BenchmarkOptions(int Runs, IReadOnlySet<string> Repositories, IReadOnlySet<string> Tools, string? OutputDirectory)
+/// <param name="SelfCheckCost">Measure the cost of the output check in-process instead of timing tools.</param>
+internal sealed record BenchmarkOptions(
+    int Runs,
+    IReadOnlySet<string> Repositories,
+    IReadOnlySet<string> Tools,
+    string? OutputDirectory,
+    bool SelfCheckCost = false)
 {
     /// <summary>The usage text.</summary>
     public const string Usage = "Usage: DotnetFastFormat.Benchmarks [--runs N] [--repo NAME]... [--tool NAME]... [--output DIR]\n"
-        + "Tools: dotnet-format-whitespace, dotnet-format, csharpier";
+        + "Tools: dotnet-format-whitespace, dotnet-format, csharpier, dotnet-fast-format\n"
+        + "       --self-check-cost  time the formatter and its output check in-process instead (needs --repo or all)";
 
     /// <summary>Parses the command line.</summary>
     /// <param name="args">The arguments.</param>
@@ -22,10 +29,17 @@ internal sealed record BenchmarkOptions(int Runs, IReadOnlySet<string> Repositor
         var repositories = new HashSet<string>(StringComparer.Ordinal);
         var tools = new HashSet<string>(StringComparer.Ordinal);
         string? output = null;
+        bool selfCheckCost = false;
 
         for (int i = 0; i < args.Count; i++)
         {
             string name = args[i];
+            if (string.Equals(name, "--self-check-cost", StringComparison.Ordinal))
+            {
+                selfCheckCost = true;
+                continue;
+            }
+
             if (i + 1 >= args.Count)
             {
                 return (null, $"Option '{name}' needs a value.");
@@ -60,6 +74,6 @@ internal sealed record BenchmarkOptions(int Runs, IReadOnlySet<string> Repositor
             }
         }
 
-        return (new BenchmarkOptions(runs, repositories, tools, output), null);
+        return (new BenchmarkOptions(runs, repositories, tools, output, selfCheckCost), null);
     }
 }
