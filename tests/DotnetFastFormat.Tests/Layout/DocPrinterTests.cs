@@ -192,6 +192,14 @@ public class DocPrinterTests
     public void InvalidOptionsAreRejected(int width, int indentSize) =>
         Assert.Throws<ArgumentOutOfRangeException>(() => new DocPrintOptions(width, indentSize));
 
+    [Fact]
+    public void IfBreakPrintsTheFlatContentsWhenTheGroupFits() =>
+        Assert.Equal("aa bb {}", Print(Docs.Group(Docs.Concat(Words("aa", "bb"), Docs.IfBreak(Docs.Text("!"), Docs.Text(" {}")))), width: 20));
+
+    [Fact]
+    public void IfBreakPrintsTheBreakContentsWhenTheGroupBreaks() =>
+        Assert.Equal("aa\nbb!", Print(Docs.Group(Docs.Concat(Words("aa", "bb"), Docs.IfBreak(Docs.Text("!"), Docs.Text(" {}")))), width: 4));
+
     private static string Print(Doc doc, int width = 20, int indentSize = 4, string newLine = "\n") =>
         DocPrinter.Print(doc, new DocPrintOptions(width, indentSize, newLine));
 

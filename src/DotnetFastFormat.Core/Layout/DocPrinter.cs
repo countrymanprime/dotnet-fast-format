@@ -74,6 +74,10 @@ internal static class DocPrinter
                 PrintFill(fill, command, commands, state.Options.Width - state.Position);
                 break;
 
+            case IfBreakDoc ifBreak:
+                commands.Add(command with { Doc = command.Mode == Mode.Break ? ifBreak.BreakContents : ifBreak.FlatContents });
+                break;
+
             default:
                 throw new InvalidOperationException($"Unknown document type {command.Doc.GetType().Name}.");
         }
@@ -210,6 +214,10 @@ internal static class DocPrinter
 
             case IndentDoc indent:
                 stack.Add((mode, indent.Contents));
+                break;
+
+            case IfBreakDoc ifBreak:
+                stack.Add((mode, mode == Mode.Break ? ifBreak.BreakContents : ifBreak.FlatContents));
                 break;
 
             case GroupDoc group:

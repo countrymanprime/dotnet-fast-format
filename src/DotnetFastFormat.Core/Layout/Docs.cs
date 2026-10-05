@@ -45,6 +45,12 @@ internal static class Docs
     /// <returns>The document.</returns>
     public static Doc Indent(Doc contents) => new IndentDoc(contents);
 
+    /// <summary>Creates a document that depends on whether its enclosing group is broken.</summary>
+    /// <param name="breakContents">Printed when the enclosing group is broken.</param>
+    /// <param name="flatContents">Printed when the enclosing group is flat.</param>
+    /// <returns>The document.</returns>
+    public static Doc IfBreak(Doc breakContents, Doc flatContents) => new IfBreakDoc(breakContents, flatContents);
+
     /// <summary>Creates a fill from alternating items and separators.</summary>
     /// <param name="parts">Items and separators, starting and ending with an item.</param>
     /// <returns>The document.</returns>

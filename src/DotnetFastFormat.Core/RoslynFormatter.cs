@@ -1,4 +1,5 @@
 using DotnetFastFormat.Core.Layout;
+using DotnetFastFormat.Core.Printers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -6,7 +7,7 @@ namespace DotnetFastFormat.Core;
 
 /// <summary>
 /// Formats C# by parsing it with Roslyn and printing a doc. Nodes the formatter does not handle yet
-/// are printed verbatim (ADR 0008), so today every file is.
+/// are printed verbatim (ADR 0008).
 /// </summary>
 public sealed class RoslynFormatter : IFormatter
 {
@@ -84,15 +85,15 @@ public sealed class RoslynFormatter : IFormatter
             var root = (CompilationUnitSyntax)tree.GetRoot();
             string newLine = DominantNewLine(source);
 
-            // Only whole-file verbatim exists so far; per-node printing arrives with the builders.
-            _ = VerbatimPolicy.KeepsWholeFile(root);
-            string body = source.Trim('\r', '\n', ' ', '\t');
-            if (body.Length == 0)
+            if (VerbatimPolicy.KeepsWholeFile(root))
             {
-                return string.Empty;
+                string body = source.Trim();
+                return body.Length == 0
+                    ? string.Empty
+                    : DocPrinter.Print(Docs.Concat(Docs.Verbatim(body), Docs.HardLine), new DocPrintOptions(newLine: newLine));
             }
 
-            return DocPrinter.Print(Docs.Concat(Docs.Verbatim(body), Docs.HardLine), new DocPrintOptions(newLine: newLine));
+            return DocPrinter.Print(CompilationUnitPrinter.Print(root), new DocPrintOptions(newLine: newLine));
         }
         catch (InsufficientExecutionStackException ex)
         {

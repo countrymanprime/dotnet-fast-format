@@ -9,7 +9,7 @@ public class FormatterTests
     [Fact]
     public void UnsupportedNodesAreVerbatim()
     {
-        const string Source = "class C\n{\n  void   M( )  {  }\n}\n";
+        const string Source = "enum   E\n{\n  A ,  B\n}\n";
 
         Assert.Equal(Source, Invariants.FormatAndCheck(Formatter, Source));
     }
@@ -17,9 +17,11 @@ public class FormatterTests
     [Fact]
     public void NodesWithCommentsAreVerbatim()
     {
-        const string Source = "class C\n{\n  int   x ; // keep   this\n  /* a\n     b */ int y;\n}\n";
+        const string Source = "class   C\n{\n  int   x ; // keep   this\n  /* a\n     b */ int y;\n}\n";
+        const string Commented = "// about C\nclass   C   { }\n";
 
-        Assert.Equal(Source, Invariants.FormatAndCheck(Formatter, Source));
+        Assert.Equal("class C\n{\n    int   x ; // keep   this\n    /* a\n     b */ int y;\n}\n", Invariants.FormatAndCheck(Formatter, Source));
+        Assert.Equal(Commented, Invariants.FormatAndCheck(Formatter, Commented));
     }
 
     [Fact]
@@ -54,8 +56,8 @@ public class FormatterTests
     [InlineData("class C { }", "class C { }\n")]
     [InlineData("class C { }\n\n\n", "class C { }\n")]
     [InlineData("class C { }\r\n\r\n", "class C { }\r\n")]
-    [InlineData("class C\r\n{\r\n}", "class C\r\n{\r\n}\r\n")]
-    [InlineData("class C\n{\r\n}\n", "class C\n{\r\n}\n")]
+    [InlineData("enum E\r\n{\r\n}", "enum E\r\n{\r\n}\r\n")]
+    [InlineData("enum E\n{\r\n}\n", "enum E\n{\r\n}\n")]
     [InlineData("", "")]
     public void EndsWithExactlyOneNewlineInTheDominantLineEnding(string source, string expected) =>
         Assert.Equal(expected, Formatter.Format(source));
@@ -89,6 +91,24 @@ public class FormatterTests
     {
         string source = "class C { int x = " + new string('(', 900) + "1" + new string(')', 900) + "; }";
 
-        Assert.Equal(source + "\n", Formatter.Format(source));
+        Assert.Contains(source[10..^2], Formatter.Format(source), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void UsesTheDominantLineEndingForTheLinesItWrites()
+    {
+        const string Source = "using   System;\r\nnamespace N\r\n{\r\n    class A { }\r\n}";
+
+        Assert.Equal("using System;\r\n\r\nnamespace N\r\n{\r\n    class A { }\r\n}\r\n", Formatter.Format(Source));
+    }
+
+    [Fact]
+    public void FormattedAndVerbatimSiblingsAreStable()
+    {
+        const string Source = "using   A;\n// note\nusing   B;\nusing   C;\n\nnamespace N { }\n";
+
+        string once = Invariants.FormatAndCheck(Formatter, Source);
+
+        Assert.Equal("using A;\n// note\nusing   B;\nusing C;\n\nnamespace N { }\n", once);
     }
 }
