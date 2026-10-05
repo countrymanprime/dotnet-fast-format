@@ -41,6 +41,10 @@ flowchart LR
 | Print | Lay the Doc IR out to `max_line_length` and the indent settings |
 | Check invariants | Idempotent, tree-preserving, no-loss, valid output (also asserted in tests) |
 
+Until each construct has a printer, the builder falls back to the node's original text, and so does any node
+carrying a comment or directive until trivia handling lands ([ADR 0008](decisions/0008-print-unsupported-syntax-verbatim.md)).
+Before a file is written, its output is re-parsed and compared with the input ([ADR 0009](decisions/0009-self-check-output-before-writing.md)).
+
 The pipeline runs per file and files are independent, so a run formats files in parallel.
 
 ## Planned layout
