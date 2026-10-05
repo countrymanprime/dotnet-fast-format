@@ -200,6 +200,31 @@ public class DocPrinterTests
     public void IfBreakPrintsTheBreakContentsWhenTheGroupBreaks() =>
         Assert.Equal("aa\nbb!", Print(Docs.Group(Docs.Concat(Words("aa", "bb"), Docs.IfBreak(Docs.Text("!"), Docs.Text(" {}")))), width: 4));
 
+    [Fact]
+    public void AColumnZeroDocStartsAtTheLeftMarginAndTheNextLineReturnsToTheIndent() =>
+        Assert.Equal(
+            "a\n    b\n#if X\n    c",
+            Print(Docs.Indent(Docs.Concat(
+                Docs.Text("a"),
+                Docs.HardLine,
+                Docs.Text("b"),
+                Docs.HardLine,
+                Docs.ColumnZero(Docs.Text("#if X")),
+                Docs.HardLine,
+                Docs.Text("c")))));
+
+    [Fact]
+    public void LinesInsideAColumnZeroDocAreNotIndented() =>
+        Assert.Equal(
+            "x\n    y\nz\nw",
+            Print(Docs.Concat(
+                Docs.Text("x"),
+                Docs.Indent(Docs.Concat(
+                    Docs.HardLine,
+                    Docs.Text("y"),
+                    Docs.HardLine,
+                    Docs.ColumnZero(Docs.Concat(Docs.Text("z"), Docs.HardLine, Docs.Text("w"))))))));
+
     private static string Print(Doc doc, int width = 20, int indentSize = 4, string newLine = "\n") =>
         DocPrinter.Print(doc, new DocPrintOptions(width, indentSize, newLine));
 

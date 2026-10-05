@@ -74,6 +74,11 @@ internal static class DocPrinter
                 PrintFill(fill, command, commands, state.Options.Width - state.Position);
                 break;
 
+            case ColumnZeroDoc columnZero:
+                state.TrimLineIndent();
+                commands.Add(new Command(0, command.Mode, columnZero.Contents));
+                break;
+
             case IfBreakDoc ifBreak:
                 commands.Add(command with { Doc = command.Mode == Mode.Break ? ifBreak.BreakContents : ifBreak.FlatContents });
                 break;
@@ -204,22 +209,6 @@ internal static class DocPrinter
                 remaining -= verbatim.Value.Length;
                 break;
 
-            case ConcatDoc concat:
-                PushReversed(stack, concat.Parts, mode);
-                break;
-
-            case FillDoc fill:
-                PushReversed(stack, fill.Parts, mode);
-                break;
-
-            case IndentDoc indent:
-                stack.Add((mode, indent.Contents));
-                break;
-
-            case IfBreakDoc ifBreak:
-                stack.Add((mode, mode == Mode.Break ? ifBreak.BreakContents : ifBreak.FlatContents));
-                break;
-
             case GroupDoc group:
                 if (mustBeFlat && group.ForcesBreak)
                 {
@@ -241,9 +230,35 @@ internal static class DocPrinter
                 }
 
                 break;
+
+            default:
+                Expand(mode, doc, stack);
+                break;
         }
 
         return FitResult.Continue;
+    }
+
+    private static void Expand(Mode mode, Doc doc, List<(Mode Mode, Doc Doc)> stack)
+    {
+        switch (doc)
+        {
+            case ConcatDoc concat:
+                PushReversed(stack, concat.Parts, mode);
+                break;
+            case FillDoc fill:
+                PushReversed(stack, fill.Parts, mode);
+                break;
+            case IndentDoc indent:
+                stack.Add((mode, indent.Contents));
+                break;
+            case ColumnZeroDoc columnZero:
+                stack.Add((mode, columnZero.Contents));
+                break;
+            case IfBreakDoc ifBreak:
+                stack.Add((mode, mode == Mode.Break ? ifBreak.BreakContents : ifBreak.FlatContents));
+                break;
+        }
     }
 
     private static void PushReversed(List<Command> commands, IReadOnlyList<Doc> parts, int indent, Mode mode)
@@ -273,6 +288,15 @@ internal static class DocPrinter
         public StringBuilder Output { get; } = new();
 
         public int Position { get; set; }
+
+        public void TrimLineIndent()
+        {
+            while (Output.Length > trimBarrier && Output[^1] is ' ' or '\t')
+            {
+                Output.Length--;
+                Position--;
+            }
+        }
 
         public void AppendVerbatim(string value)
         {
