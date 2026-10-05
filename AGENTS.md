@@ -4,15 +4,19 @@
 syntax trees (no MSBuild), prints through its own doc-printer, and aims to replace
 `dotnet format`'s whitespace/style pass.
 
-**Status: M2 (statements and expressions) on top of M3 (comments and the preprocessor).** The CLI formats files and
-directories in place. The formatter prints usings, namespaces, types, members, statements, expressions and string
-literals to 100 columns, and keeps comments and preprocessor directives in place. A construct with no printer, and a
-comment or directive in a position the printers do not handle, is copied as written, per statement or per
-expression and never per file (see `docs/style.md`, [ADR 0008](docs/decisions/0008-print-unsupported-syntax-verbatim.md),
+**Status: M2 (statements and expressions), M3 (comments and the preprocessor) and M4 (`.editorconfig`).** The CLI formats
+files and directories in place. The formatter prints usings, namespaces, types, members, statements, expressions and
+string literals to 100 columns (or the `max_line_length` that applies), and keeps comments and preprocessor directives in
+place. A construct with no printer, and a comment or directive in a position the printers do not handle, is copied as
+written, per statement or per expression and never per file (see `docs/style.md`,
+[ADR 0008](docs/decisions/0008-print-unsupported-syntax-verbatim.md),
 [ADR 0010](docs/decisions/0010-keep-comments-at-node-boundaries.md),
 [ADR 0013](docs/decisions/0013-lay-out-statements-and-expressions-with-groups.md) and
-[ADR 0014](docs/decisions/0014-statements-and-expressions-reuse-the-trivia-model.md)). There is no `--check`, `--stdin`
-or `.editorconfig` support yet.
+[ADR 0014](docs/decisions/0014-statements-and-expressions-reuse-the-trivia-model.md)). It reads the `.editorconfig`
+files that apply to each file (nearest first, up to `root = true`) and honors `indent_style`, `indent_size`,
+`tab_width`, `max_line_length`, `end_of_line`, `insert_final_newline` and `charset`
+([ADR 0012](docs/decisions/0012-read-editorconfig-with-a-small-parser-in-core.md)); other keys are ignored. There is no
+`--check` or `--stdin` yet.
 
 ## Commands
 

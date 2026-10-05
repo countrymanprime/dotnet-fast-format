@@ -34,11 +34,11 @@ flowchart LR
 
 | Stage | Responsibility |
 |---|---|
-| Resolve settings | Walk up from the file to find `.editorconfig` files, nearest first, stop at `root = true`; map keys to formatter options |
+| Resolve settings | Walk up from the file to find `.editorconfig` files, nearest first, stop at `root = true`; match sections by glob, later sections and nearer files win; map the seven supported keys to `FormatOptions` ([ADR 0012](decisions/0012-read-editorconfig-with-a-small-parser-in-core.md)). Each file is read and parsed once per run |
 | Parse | `Microsoft.CodeAnalysis.CSharp` syntax tree at `LanguageVersion.Preview` (a superset of the latest released version), one shared setting for the formatter and the output check; a parse error stops the file |
 | Attach trivia | Decide which node owns each comment, blank line and directive so none is lost or moved across code |
 | Build Doc IR | One builder per syntax node kind (the [Prettier-style document tree](https://github.com/prettier/prettier/blob/main/commands.md); see the [glossary](glossary.md)), composed from printer primitives (group, indent, line, softline, fill) |
-| Print | Lay the Doc IR out to `max_line_length` and the indent settings |
+| Print | Lay the Doc IR out to `max_line_length`, the indent style and size (a tab counts as `tab_width` columns) and the line ending; then drop or keep the final newline |
 | Check invariants | Idempotent, tree-preserving, no-loss, valid output (also asserted in tests) |
 
 Where a construct has no printer, the builder falls back to the node's original text
@@ -67,7 +67,7 @@ The layout of each construct is in [style.md](style.md).
 
 ```text
 src/DotnetFastFormat.Core/       doc IR, printer, per-node builders, trivia handling
-src/DotnetFastFormat.Config/     .editorconfig resolution and option mapping
+src/DotnetFastFormat.Core/Config/  .editorconfig parsing, glob matching, resolution and option mapping (inside Core, no file I/O: the CLI supplies a reader)
 src/DotnetFastFormat.Cli/        the dotnet tool: arguments, file discovery, exit codes
 tests/                           golden fixtures (Verify), invariant helper, corpus run
 tests/DotnetFastFormat.Corpus/   pinned corpus manifest and fetch step, shared by tests and benchmarks
@@ -81,6 +81,7 @@ strings.
 
 - [0002](decisions/0002-build-a-doc-printer-on-roslyn-syntax-trees.md): build our own doc-printer on Roslyn syntax trees
 - [0003](decisions/0003-use-dotnet-test-as-the-single-gate.md): `dotnet test` is the single gate
+- [0012](decisions/0012-read-editorconfig-with-a-small-parser-in-core.md): read `.editorconfig` with a small parser in Core and support seven keys
 
 ## Open design questions
 
