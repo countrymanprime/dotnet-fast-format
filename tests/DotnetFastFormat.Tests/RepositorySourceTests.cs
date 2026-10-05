@@ -7,6 +7,8 @@ public class RepositorySourceTests
 {
     private static readonly string Root = Path.GetFullPath(Path.Combine(SourceDirectory(), "..", ".."));
 
+    public static string RootDirectory => Root;
+
     public static TheoryData<string> Files()
     {
         var data = new TheoryData<string>();

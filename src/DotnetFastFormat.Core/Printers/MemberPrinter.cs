@@ -143,7 +143,7 @@ internal static class MemberPrinter
         Doc head = Docs.Concat(
             builder.Tokens([.. constructor.Modifiers, constructor.Identifier]),
             ParameterListPrinter.Print(constructor.ParameterList, builder));
-        Doc? initializer = constructor.Initializer is null ? null : builder.Verbatim(constructor.Initializer);
+        Doc? initializer = constructor.Initializer is null ? null : builder.Verbatim(constructor.Initializer, startsOwnLine: true);
         (MemberBodyKind kind, Doc body) = DeclarationLayout.Body(constructor.Body, constructor.ExpressionBody, constructor.SemicolonToken, builder);
         return DeclarationLayout.Compose(head, [], initializer, kind, body);
     }

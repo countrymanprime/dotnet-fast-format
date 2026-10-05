@@ -4,10 +4,11 @@
 syntax trees (no MSBuild), prints through its own doc-printer, and aims to replace
 `dotnet format`'s whitespace/style pass.
 
-**Status: M1 (first formatter).** The CLI formats files and directories in place. The formatter prints
-usings, namespaces, type declarations and member signatures; statements, expressions and anything with a
-comment or directive are copied as written (see `docs/style.md` and
-[ADR 0008](docs/decisions/0008-print-unsupported-syntax-verbatim.md)). There is no `--check`, `--stdin` or
+**Status: M3 (comments and the preprocessor).** The CLI formats files and directories in place. The formatter prints
+usings, namespaces, type declarations and member signatures, and keeps comments and preprocessor directives in
+place; statements, expressions and a node with a comment in an unsupported position are copied as written (see
+`docs/style.md`, [ADR 0008](docs/decisions/0008-print-unsupported-syntax-verbatim.md) and
+[ADR 0010](docs/decisions/0010-keep-comments-at-node-boundaries.md)). There is no `--check`, `--stdin` or
 `.editorconfig` support yet.
 
 ## Commands

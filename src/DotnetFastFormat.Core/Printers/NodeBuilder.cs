@@ -78,9 +78,15 @@ internal sealed class NodeBuilder
     /// would swallow what follows, so the node is marked unsafe instead.
     /// </summary>
     /// <param name="child">The child to copy.</param>
+    /// <param name="startsOwnLine">Whether the child is printed on a line of its own, so a comment above it stays above it. Otherwise a comment in its leading trivia would move onto the previous token's line, and the node is marked unsafe.</param>
     /// <returns>A verbatim document.</returns>
-    public Doc Verbatim(SyntaxNode child)
+    public Doc Verbatim(SyntaxNode child, bool startsOwnLine = false)
     {
+        if (!startsOwnLine && child.GetFirstToken().LeadingTrivia.Any(TriviaRules.IsCommentOrDirective))
+        {
+            IsSafe = false;
+        }
+
         string text = child.ToFullString();
         SyntaxToken end = child.GetLastToken();
         if (end == last)

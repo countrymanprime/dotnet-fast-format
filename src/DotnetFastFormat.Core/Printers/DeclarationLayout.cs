@@ -54,7 +54,7 @@ internal static class DeclarationLayout
                 && !builder.HasUnprintedTrivia(block.CloseBraceToken, leadingHandled: false);
             return empty
                 ? (MemberBodyKind.EmptyBlock, Docs.Text("{ }"))
-                : (MemberBodyKind.Block, builder.Verbatim(block));
+                : (MemberBodyKind.Block, builder.Verbatim(block, startsOwnLine: true));
         }
 
         if (expression is not null)
