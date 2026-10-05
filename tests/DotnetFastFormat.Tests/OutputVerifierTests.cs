@@ -42,6 +42,42 @@ public class OutputVerifierTests
     }
 
     [Fact]
+    public void ATrailingCommentMovedAboveTheNextItemIsReported()
+    {
+        const string Before = "class C\n{\n    int a; // about a\n    int b;\n}\n";
+        const string After = "class C\n{\n    int a;\n    // about a\n    int b;\n}\n";
+
+        Assert.Equal(OutputInvariant.NoLoss, OutputVerifier.Verify(Before, After).Violation);
+    }
+
+    [Fact]
+    public void AnInlineCommentMovedOntoItsOwnLineIsReported()
+    {
+        const string Before = "class C\n{\n    /* about b */ int b;\n}\n";
+        const string After = "class C\n{\n    /* about b */\n    int b;\n}\n";
+
+        Assert.Equal(OutputInvariant.NoLoss, OutputVerifier.Verify(Before, After).Violation);
+    }
+
+    [Fact]
+    public void WhitespaceChangedInsideDisabledTextIsReported()
+    {
+        const string Before = "class C\n{\n#if X\n    string s = @\"a  b\";\n#endif\n}\n";
+        const string After = "class C\n{\n#if X\n    string s = @\"a b\";\n#endif\n}\n";
+
+        Assert.Equal(OutputInvariant.NoLoss, OutputVerifier.Verify(Before, After).Violation);
+    }
+
+    [Fact]
+    public void LineTerminatorsAreNotCompared()
+    {
+        const string Before = "// a\r\nclass C\r\n{\r\n#if X\r\n int  x;\r\n#endif\r\n}\r\n";
+        const string After = "// a\nclass C\n{\n#if X\n int  x;\n#endif\n}\n";
+
+        Assert.True(OutputVerifier.Verify(Before, After).Succeeded);
+    }
+
+    [Fact]
     public void ANewSyntaxErrorIsReported()
     {
         VerificationResult result = OutputVerifier.Verify(Source, Source + "}");

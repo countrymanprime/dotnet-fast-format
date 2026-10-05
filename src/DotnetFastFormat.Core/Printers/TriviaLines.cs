@@ -53,14 +53,21 @@ internal static class TriviaLines
 
     /// <summary>Reads the trivia after a token, up to the end of its line.</summary>
     /// <param name="trivia">The token's trailing trivia.</param>
-    /// <returns>Whether the shape is one a printer handles, and the comment if there is one. A comment is clean when it is the only one and does not span lines.</returns>
+    /// <returns>Whether the shape is one a printer handles, and the comment if there is one. A comment is clean when it is the only one, does not span lines, and (for a block comment) ends its line.</returns>
     public static (bool Clean, string? Comment) ParseTrailing(SyntaxTriviaList trivia)
     {
         string? comment = null;
+        bool endsLine = false;
         foreach (SyntaxTrivia piece in trivia)
         {
             SyntaxKind kind = piece.Kind();
-            if (kind is SyntaxKind.WhitespaceTrivia or SyntaxKind.EndOfLineTrivia)
+            if (kind == SyntaxKind.EndOfLineTrivia)
+            {
+                endsLine = true;
+                continue;
+            }
+
+            if (kind == SyntaxKind.WhitespaceTrivia)
             {
                 continue;
             }
@@ -76,7 +83,8 @@ internal static class TriviaLines
             comment = text.TrimEnd();
         }
 
-        return (true, comment);
+        // A block comment with more code after it on its line belongs to that code, not to the token before it.
+        return comment is not null && !endsLine && !comment.StartsWith("//", StringComparison.Ordinal) ? (false, null) : (true, comment);
     }
 
     private static (TriviaLineKind Kind, string[] Text, bool LineStaysOpen, string? RawText)? Classify(SyntaxTrivia piece)

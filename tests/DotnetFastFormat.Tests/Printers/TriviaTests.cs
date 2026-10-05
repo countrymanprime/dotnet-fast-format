@@ -98,6 +98,7 @@ public class TriviaTests
     [Theory]
     [InlineData("int x; /* a */ // b")]
     [InlineData("int x; /* a\n b */")]
+    [InlineData("int a; /* a */ int b;")]
     public void ShapesWithMoreThanOneCommentOrAMultiLineCommentAreNotClean(string source)
     {
         SyntaxToken semicolon = Tokens($"class A {{\n{source}\n}}").First(t => t.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SemicolonToken));
