@@ -1,5 +1,5 @@
 ﻿#if DEBUG
 class   Debug { }
 #else
-class   Release { }
+class Release { }
 #endif

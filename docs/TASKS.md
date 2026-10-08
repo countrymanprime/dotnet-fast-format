@@ -50,12 +50,36 @@ Risks: comment and trivia ownership (deferred to M3 by the verbatim fallback), s
 printer (T-101 tests it), and idempotency at the boundary between formatted and verbatim regions (every
 printer's fixtures include one).
 
+## M3: comments and the preprocessor
+
+Goal: a file with comments and `#if` blocks is formatted instead of copied: own-line comments, end-of-line
+comments, comments before `}` and at the end of a file, and directives are kept in place; every other position
+copies the node that owns it ([ADR 0010](decisions/0010-keep-comments-at-node-boundaries.md),
+[ADR 0011](decisions/0011-format-the-no-symbols-parse-and-keep-directives-as-lines.md)). The four invariants hold
+on every fixture, on comments inserted at token boundaries of this repository's files, and on the corpus.
+
+One pull request, one commit per task.
+
+| ID | Task | Requirements | Files | Acceptance | Verify |
+|---|---|---|---|---|---|
+| T-300 | Decide the trivia model and the preprocessor strategy: ADRs 0010 and 0011 | FMT-009, FMT-011 | `docs/decisions/` | Both ADRs Accepted (provisional) | done under delegation after an independent review |
+| T-301 | A document that prints its contents from column 0 (for directives and disabled text) | none (internal) | `src/DotnetFastFormat.Core/Layout/`, `tests/DotnetFastFormat.Tests/Layout/` | A directive inside an indented group starts at column 0 and the next line returns to its indent; trailing spaces before it are removed | `dotnet test -- --filter-class "*DocPrinter*"` (done) |
+| T-302 | Trivia classifier: parse a token's leading trivia into own-line items with blank-line counts, and its trailing trivia into at most one comment; report unclean shapes | FMT-014, FMT-015 | `src/DotnetFastFormat.Core/Printers/`, `tests/DotnetFastFormat.Tests/Printers/` | Unit tests for every trivia shape, including `/* */` followed by code, two comments after one token, `///`, `/** */` and disabled text | `dotnet test -- --filter-class "*Trivia*"` (done) |
+| T-303 | Print leading lines and trailing comments for list items; verbatim children never repeat them | FMT-014, FMT-015, FMT-018 | `src/DotnetFastFormat.Core/Printers/` | Fixtures `comments/leading-*`, `comments/trailing-*`, `comments/text-*` pass | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-304 | Closing lines: comments and directives before `}` and at the end of the file; empty bodies with comments | FMT-016 | `src/DotnetFastFormat.Core/Printers/` | Fixtures `comments/closing-*` pass | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-305 | Preprocessor: remove the whole-file rule for conditional directives, print disabled text from column 0, indent `#region` with the code | FMT-011, FMT-012, FMT-017 | `src/DotnetFastFormat.Core/` | Fixtures `directives/*` pass, including a `#if` that splits a header (verbatim node) and nested `#if` | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-306 | Mutation test: insert comments and directives at token boundaries of this repository's files, format, check every invariant | FMT-001, FMT-002, FMT-003 | `tests/DotnetFastFormat.Tests/` | Fixed-seed run passes, with no crash and no invariant violation | `dotnet test -- --filter-class "*CommentMutationTests*"` (done; the same mutations run over the corpus in the slow tier) |
+| T-307 | Corpus run and docs: `docs/style.md`, `docs/style-changelog.md`, architecture and AGENTS.md status | FMT-001 to FMT-003 | `docs/`, `AGENTS.md` | `-p:TestTier=slow` passes; the style changelog lists the changed output | `dotnet test -p:TestTier=slow` (done: corpus format and corpus mutation tests pass on all six repositories) |
+
+Risks: a trivia shape the classifier wrongly calls clean (the output check blocks the write, but the file is then
+unformatted and exits 2); hidden dependence on the no-symbols parse; `#line` after reflow.
+
 ## Later milestones
 
 | Milestone | Scope |
 |---|---|
 | M2 | Statements, expressions, string literals |
-| M3 | Comments and trivia; preprocessor strategy decided (ADR) |
+| M3 | Comments and trivia; preprocessor strategy decided (ADR): planned above |
 | M4 | `.editorconfig` resolution and the first supported keys; BOM and line endings |
 | M5 | Parallelism, cache, benchmarks and the performance gate |
 | M6 | `--check`, `--stdin`, packaging as a .NET tool |

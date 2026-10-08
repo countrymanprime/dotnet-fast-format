@@ -4,7 +4,7 @@
 class   B   {  int   x ;  }
 
 // commented
-class   C { }
+class C { }
 
 class   D : Base(1) { }
 

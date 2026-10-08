@@ -10,8 +10,9 @@ internal static class MemberList
 {
     /// <summary>Prints <paramref name="items"/>, each on its own line, separated as the style requires.</summary>
     /// <param name="items">The sibling nodes, in source order.</param>
-    /// <returns>The document, with no line break before the first item or after the last.</returns>
-    public static Doc Print(IReadOnlyList<SyntaxNode> items)
+    /// <param name="closing">The own-line comments and directives before the closing brace or the end of the file, printed after the last item.</param>
+    /// <returns>The document, with no line break before the first line or after the last.</returns>
+    public static Doc Print(IReadOnlyList<SyntaxNode> items, LeadingTrivia? closing = null)
     {
         var parts = new List<Doc>();
         for (int i = 0; i < items.Count; i++)
@@ -25,9 +26,16 @@ internal static class MemberList
                 }
             }
 
-            parts.Add(NodePrinter.Print(items[i]));
+            PrintedNode printed = NodePrinter.Print(items[i]);
+            parts.Add(TriviaPrinter.Leading(printed.Leading));
+            parts.Add(printed.Doc);
+            if (printed.TrailingComment is { } comment)
+            {
+                parts.Add(Docs.LineSuffix(" " + comment));
+            }
         }
 
+        parts.Add(TriviaPrinter.Closing(closing, hasItemsAbove: items.Count > 0));
         return Docs.Concat(parts);
     }
 

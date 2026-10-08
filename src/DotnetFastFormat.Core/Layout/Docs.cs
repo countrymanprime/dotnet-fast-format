@@ -45,6 +45,16 @@ internal static class Docs
     /// <returns>The document.</returns>
     public static Doc Indent(Doc contents) => new IndentDoc(contents);
 
+    /// <summary>Creates text that is written just before the next line break and takes no width.</summary>
+    /// <param name="text">The text, such as a trailing comment.</param>
+    /// <returns>The document.</returns>
+    public static Doc LineSuffix(string text) => new LineSuffixDoc(text);
+
+    /// <summary>Creates a document that is printed from column 0 whatever the indentation around it.</summary>
+    /// <param name="contents">What to print from column 0, such as a directive line.</param>
+    /// <returns>The document.</returns>
+    public static Doc ColumnZero(Doc contents) => new ColumnZeroDoc(contents);
+
     /// <summary>Creates a document that depends on whether its enclosing group is broken.</summary>
     /// <param name="breakContents">Printed when the enclosing group is broken.</param>
     /// <param name="flatContents">Printed when the enclosing group is flat.</param>

@@ -15,13 +15,21 @@ public class FormatterTests
     }
 
     [Fact]
-    public void NodesWithCommentsAreVerbatim()
+    public void NodesWithCommentsInOtherPositionsAreVerbatim()
     {
-        const string Source = "class   C\n{\n  int   x ; // keep   this\n  /* a\n     b */ int y;\n}\n";
-        const string Commented = "// about C\nclass   C   { }\n";
+        const string Source = "class   C\n{\n  void   M( int a /* first */ , int b ) { }\n  int   y ;\n}\n";
 
-        Assert.Equal("class C\n{\n    int   x ; // keep   this\n    /* a\n     b */ int y;\n}\n", Invariants.FormatAndCheck(Formatter, Source));
-        Assert.Equal(Commented, Invariants.FormatAndCheck(Formatter, Commented));
+        Assert.Equal(
+            "class C\n{\n    void   M( int a /* first */ , int b ) { }\n\n    int y;\n}\n",
+            Invariants.FormatAndCheck(Formatter, Source));
+    }
+
+    [Fact]
+    public void CommentsAboveAndAfterNodesAreKept()
+    {
+        const string Source = "// about C\nclass   C   { }   // end\n";
+
+        Assert.Equal("// about C\nclass C { } // end\n", Invariants.FormatAndCheck(Formatter, Source));
     }
 
     [Fact]
@@ -33,23 +41,40 @@ public class FormatterTests
     }
 
     [Theory]
-    [InlineData("#if DEBUG\nclass   A { }\n#else\nclass   B { }\n#endif\n")]
-    [InlineData("#region r\nclass   A { }\n#endregion\n")]
-    public void FilesWithConditionalDirectivesAreVerbatim(string source) =>
-        Assert.Equal(source, Invariants.FormatAndCheck(Formatter, source));
+    [InlineData("#if DEBUG\nclass   A { }\n#else\nclass   B { }\n#endif\n", "#if DEBUG\nclass   A { }\n#else\nclass B { }\n#endif\n")]
+    [InlineData("#region r\nclass   A { }\n#endregion\n", "#region r\nclass A { }\n#endregion\n")]
+    public void ConditionalDirectivesAreKept(string source, string expected) =>
+        Assert.Equal(expected, Invariants.FormatAndCheck(Formatter, source));
 
     [Theory]
     [InlineData("// only a comment\n")]
-    [InlineData("using   System;\n")]
+    [InlineData("#nullable enable\n")]
     public void FilesWithoutDeclarationsAreVerbatim(string source) =>
         Assert.Equal(source, Invariants.FormatAndCheck(Formatter, source));
 
     [Fact]
-    public void FileEndingInACommentIsVerbatim()
+    public void AFileWithoutDeclarationsLosesOnlyItsOuterWhitespace() =>
+        Assert.Equal("// spaced   comment\n", Invariants.FormatAndCheck(Formatter, "   \n  // spaced   comment\n\n"));
+
+    [Fact]
+    public void AFileOfUsingsIsFormatted() =>
+        Assert.Equal("using System;\n", Invariants.FormatAndCheck(Formatter, "using   System;\n"));
+
+    [Fact]
+    public void CommentsAtTheEndOfTheFileAreKept()
     {
-        const string Source = "class   C { }\n// trailing\n";
+        const string Source = "class   C { }\n\n\n// trailing\n#pragma warning restore CS0168";
+
+        Assert.Equal("class C { }\n\n// trailing\n#pragma warning restore CS0168\n", Invariants.FormatAndCheck(Formatter, Source));
+    }
+
+    [Fact]
+    public void LineDirectivesThatRemapLinesKeepTheWholeFileAsWritten()
+    {
+        const string Source = "#line 100 \"x.cs\"\nclass   A { }\n";
 
         Assert.Equal(Source, Invariants.FormatAndCheck(Formatter, Source));
+        Assert.Equal("#line hidden\nclass A { }\n", Invariants.FormatAndCheck(Formatter, "#line hidden\nclass   A { }\n"));
     }
 
     [Theory]
@@ -109,6 +134,32 @@ public class FormatterTests
 
         string once = Invariants.FormatAndCheck(Formatter, Source);
 
-        Assert.Equal("using A;\n// note\nusing   B;\nusing C;\n\nnamespace N { }\n", once);
+        Assert.Equal("using A;\n// note\nusing B;\nusing C;\n\nnamespace N { }\n", once);
+    }
+
+    [Fact]
+    public void CommentsAndDirectivesKeepTheDominantLineEnding()
+    {
+        const string Source = "// head\r\nclass   A\r\n{\r\n    int   x ; // note\r\n#if DEBUG\r\n    int   y;\r\n#endif\r\n    /* a\r\n       b */\r\n    int z;\r\n    // last\r\n}\r\n";
+
+        Assert.Equal(
+            "// head\r\nclass A\r\n{\r\n    int x; // note\r\n#if DEBUG\r\n    int   y;\r\n#endif\r\n    /* a\r\n       b */\r\n    int z;\r\n    // last\r\n}\r\n",
+            Invariants.FormatAndCheck(Formatter, Source));
+    }
+
+    [Fact]
+    public void AFileScopedNamespaceKeepsItsOwnAndItsLastMembersTrailingComments()
+    {
+        const string Source = "namespace N; // header\nclass   A { } // last\n";
+
+        Assert.Equal("namespace N; // header\n\nclass A { } // last\n", Invariants.FormatAndCheck(Formatter, Source));
+    }
+
+    [Fact]
+    public void ACommentBeforeTheClosingBraceOfAnEmptyBodyKeepsTheBodyOpen()
+    {
+        const string Source = "class A\n{\n// d\n}\n";
+
+        Assert.Equal("class A\n{\n    // d\n}\n", Invariants.FormatAndCheck(Formatter, Source));
     }
 }

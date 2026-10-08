@@ -50,11 +50,11 @@ internal static class DeclarationLayout
         if (block is not null)
         {
             bool empty = block.Statements.Count == 0
-                && !TriviaRules.CarriesCommentOrDirective(block.OpenBraceToken)
-                && !TriviaRules.CarriesCommentOrDirective(block.CloseBraceToken);
+                && !builder.HasUnprintedTrivia(block.OpenBraceToken)
+                && !builder.HasUnprintedTrivia(block.CloseBraceToken, leadingHandled: false);
             return empty
                 ? (MemberBodyKind.EmptyBlock, Docs.Text("{ }"))
-                : (MemberBodyKind.Block, VerbatimText.Of(block));
+                : (MemberBodyKind.Block, builder.Verbatim(block, startsOwnLine: true));
         }
 
         if (expression is not null)
@@ -65,7 +65,7 @@ internal static class DeclarationLayout
                     Docs.Text(" "),
                     builder.Token(expression.ArrowToken),
                     Docs.Text(" "),
-                    VerbatimText.Of(expression.Expression),
+                    builder.Verbatim(expression.Expression),
                     builder.Token(semicolon)));
         }
 

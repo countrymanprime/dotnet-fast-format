@@ -79,7 +79,7 @@ internal static class MemberPrinter
                 Docs.Text(" "),
                 builder.Token(property.ExpressionBody!.ArrowToken),
                 Docs.Text(" "),
-                VerbatimText.Of(property.ExpressionBody.Expression),
+                builder.Verbatim(property.ExpressionBody.Expression),
                 builder.Token(property.SemicolonToken));
         }
 
@@ -143,7 +143,7 @@ internal static class MemberPrinter
         Doc head = Docs.Concat(
             builder.Tokens([.. constructor.Modifiers, constructor.Identifier]),
             ParameterListPrinter.Print(constructor.ParameterList, builder));
-        Doc? initializer = constructor.Initializer is null ? null : VerbatimText.Of(constructor.Initializer);
+        Doc? initializer = constructor.Initializer is null ? null : builder.Verbatim(constructor.Initializer, startsOwnLine: true);
         (MemberBodyKind kind, Doc body) = DeclarationLayout.Body(constructor.Body, constructor.ExpressionBody, constructor.SemicolonToken, builder);
         return DeclarationLayout.Compose(head, [], initializer, kind, body);
     }
@@ -166,5 +166,5 @@ internal static class MemberPrinter
                 leadingSpace ? Docs.Text(" ") : Docs.Empty,
                 builder.Token(clause.EqualsToken),
                 Docs.Text(" "),
-                VerbatimText.Of(clause.Value));
+                builder.Verbatim(clause.Value));
 }

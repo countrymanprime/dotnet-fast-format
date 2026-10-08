@@ -9,10 +9,11 @@ added with the fixture that pins it. Fixtures live in `tests/DotnetFastFormat.Te
 - Indent four spaces; the width is 100 columns (UTF-16 code units).
 - Lines end with the file's dominant line ending (LF unless CRLF is more common); the file ends with exactly one.
 - An empty or whitespace-only file stays empty.
-- A file is kept as written when it has `#if`, `#elif`, `#else`, `#endif`, `#region` or `#endregion`, no
-  declarations, or a comment or directive after its last token ([ADR 0008](decisions/0008-print-unsupported-syntax-verbatim.md)).
-- A node with a comment or directive on one of its own tokens (including a comment above it) is kept as written,
-  with everything inside it. Its neighbours are still formatted. This goes away when comment handling lands (M3).
+- A file is kept as written when it holds nothing but whitespace, comments and directives, or when it has a
+  `#line` directive that remaps line numbers (`#line 100`, `#line (1,1)-(2,2)`; `#line hidden` and `#line default`
+  are fine) ([ADR 0008](decisions/0008-print-unsupported-syntax-verbatim.md), [ADR 0011](decisions/0011-format-the-no-symbols-parse-and-keep-directives-as-lines.md)).
+- A node with a comment or directive in a position the next section does not list is kept as written, with
+  everything inside it. Its neighbours are still formatted.
 
 ## Using directives and extern aliases
 
@@ -81,3 +82,27 @@ Fields, properties with no accessor bodies (or an expression body), methods and 
   misaligned. An empty block prints `{ }` on the signature's last line (or on its own line below a wrapped
   signature).
 - A constructor initializer (`: base(x)`) goes on its own indented line, kept as written.
+
+## Comments and directives
+
+[ADR 0010](decisions/0010-keep-comments-at-node-boundaries.md) and [ADR 0011](decisions/0011-format-the-no-symbols-parse-and-keep-directives-as-lines.md).
+The text of a comment is never changed.
+
+- **Above an item** (a using, member or top-level statement): own-line `//` and `///` comments, block comments that
+  end their line, directives and disabled text are printed on their own lines above it, in order. Comments are
+  indented with the code; the lines of a `///` run are each re-indented; the first line of a multi-line block
+  comment is re-indented and its other lines are copied.
+- **Directives** are written at column 0, except `#region` and `#endregion`, which are indented with the code.
+  Disabled text (an inactive `#if` branch) is copied from column 0 as it is; only the active branch, the one the
+  parse without symbols sees, is formatted.
+- **Blank lines** around comments: the author's blank line is kept (more than one becomes one) between comments,
+  directives and the item; none is added between a comment and the item below it.
+- **After an item**: one comment on the same line as the item's last token (a `//` comment, or a block comment that
+  ends the line) is printed after it, separated by one space. It never makes the item wrap.
+- **Before a closing `}` and at the end of the file**: own-line comments and directives are the last lines of the
+  body or file, indented with the body. A body that holds only comments is printed open.
+- **Everything else** copies the node that owns the comment: a comment inside a header or parameter list, after a
+  `{` on its line, between a `)` and a `{`, a block comment followed by code, two comments after one token, a
+  directive inside a header or expression. A comment inside a method body or an initializer value is part of
+  the text that is copied.
+- A `#if` that splits a declaration (`#if A class X : B #else class X : C #endif`) copies that declaration.

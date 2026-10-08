@@ -4,6 +4,8 @@
 - **Acceptance:** accepted provisionally on 2026-10-04 under the author's delegation while they were away, after an
   independent review that asked for the changes below (adopted). Pending the author's review.
 - **Date:** 2026-10-04
+- **Amended:** 2026-10-05. Rule 2 (nodes with comments) is narrowed by [ADR 0010](0010-keep-comments-at-node-boundaries.md) and rule 3
+  (whole-file cases) is narrowed by [ADR 0011](0011-format-the-no-symbols-parse-and-keep-directives-as-lines.md). The rest stands.
 - **Deciders:** countrymanprime
 - **Related:** [ADR 0002](0002-build-a-doc-printer-on-roslyn-syntax-trees.md), requirements FMT-008 and FMT-009
 
