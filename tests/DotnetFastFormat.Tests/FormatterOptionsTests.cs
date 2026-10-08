@@ -64,10 +64,10 @@ public class FormatterOptionsTests
     [Fact]
     public void CopiedTextIsNotReindentedUnderTabs()
     {
-        const string Source = "class A\n{\n    void M()\n    {\n        int   y ;\n    }\n}\n";
+        const string Source = "class A\n{\n    void M()\n    {\n        var q = from a in b\n                  where a > 1   select a;\n    }\n}\n";
 
         Assert.Equal(
-            "class A\n{\n\tvoid M()\n\t{\n        int   y ;\n    }\n}\n",
+            "class A\n{\n\tvoid M()\n\t{\n\t\tvar q = from a in b\n                  where a > 1   select a;\n\t}\n}\n",
             Invariants.FormatAndCheck(Formatter, Source, new FormatOptions { IndentStyle = IndentStyle.Tab }));
     }
 
@@ -92,7 +92,7 @@ public class FormatterOptionsTests
         string output = Invariants.FormatAndCheck(Formatter, Source, new FormatOptions { EndOfLine = ending });
 
         Assert.Equal(
-            string.Join(newLine, "// head", "enum E", "{", "  A,", "  B", "}", string.Empty, "/* a", "   b */", "class A", "{", "#if X", "    int   y;", "#endif", "}", string.Empty),
+            string.Join(newLine, "// head", "enum E", "{", "    A,", "    B", "}", string.Empty, "/* a", "   b */", "class A", "{", "#if X", "    int   y;", "#endif", "}", string.Empty),
             output);
     }
 

@@ -310,6 +310,7 @@ public class DocPrinterTests
         Assert.Equal(10_000, output.Count(c => c == '('));
     }
 
+    [Fact]
     public void TabIndentationWritesOneTabPerLevelWhenTheTabWidthIsTheIndentSize()
     {
         Doc doc = Docs.Concat(
