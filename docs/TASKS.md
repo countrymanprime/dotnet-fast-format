@@ -110,13 +110,44 @@ One pull request, one commit per task.
 Risks: a trivia shape the classifier wrongly calls clean (the output check blocks the write, but the file is then
 unformatted and exits 2); hidden dependence on the no-symbols parse; `#line` after reflow.
 
+## M4: `.editorconfig`
+
+Goal: `dotnet fast-format` reads the `.editorconfig` files that apply to each file (nearest first, stopping at
+`root = true`, with no MSBuild) and applies the keys `indent_style`, `indent_size`, `tab_width`,
+`max_line_length`, `end_of_line`, `insert_final_newline` and `charset`. Defaults with no key stay as in
+[ADR 0007](decisions/0007-default-style-is-microsoft-conventions-at-100-columns.md). The set of keys, how invalid
+values and tabs behave, and the choice of a hand-written parser and matcher are decided in
+[ADR 0012](decisions/0012-read-editorconfig-with-a-small-parser-in-core.md), written first. The four invariants
+hold under every supported configuration, on every fixture and on the corpus, including the corpus files'
+own `.editorconfig` files.
+
+One pull request, one commit per task. T-401 and T-402 do not need the parser; T-403 to T-405 do not touch the
+printers.
+
+| ID | Task | Requirements | Files | Acceptance | Verify |
+|---|---|---|---|---|---|
+| T-400 | Decide the supported keys, invalid values, tab handling, `insert_final_newline = false`, `end_of_line` and `charset` semantics, and the no-dependency parser: ADR 0012 | CFG-001, CFG-006 to CFG-011, FMT-007, FMT-013 | `docs/decisions/` | ADR 0012 Accepted (provisional); the index lists it | done provisionally by the implementing agent; the author's review is pending |
+| T-401 | Doc printer: tab indentation (`UseTabs`, `TabWidth`); a tab counts as `TabWidth` columns in `Fits`, in the position after a break and when trailing indentation is trimmed | CFG-001 | `src/DotnetFastFormat.Core/Layout/`, `tests/DotnetFastFormat.Tests/Layout/` | A line of exactly the width, indented with tabs, fits and one more column breaks; a column-zero directive after a tab-indented line has the right position; `indent_size` 4 with `tab_width` 3 gives a tab and a space | `dotnet test -- --filter-class "*DocPrinter*"` (done) |
+| T-402 | `FormatOptions` (public, validated) and `IFormatter.Format(string, FormatOptions)`; `RoslynFormatter` applies indent style and size, width, `end_of_line` (including text inside verbatim nodes and trivia, never inside a token) and `insert_final_newline`; `Format(string)` uses the defaults; `Invariants` takes options; a matrix test runs every golden input under each supported setting | CFG-001, CFG-006 to CFG-008, CFG-013, FMT-013 | `src/DotnetFastFormat.Core/`, `tests/DotnetFastFormat.Tests/` | `FormatterOptionsTests` and `OptionMatrixTests` pass: tabs, two spaces, width 60 and 120, CRLF and LF output for mixed input, no final newline, and a multi-line string literal untouched by `end_of_line` | `dotnet test -- --filter-class "*FormatterOptions*"` and `--filter-class "*OptionMatrix*"` (done) |
+| T-403 | `.editorconfig` file parser: lines, sections, preamble `root`, pairs, case rules, no inline comments, `unset`; never throws | CFG-003, CFG-005 | `src/DotnetFastFormat.Core/Config/`, `tests/DotnetFastFormat.Tests/Config/` | `EditorConfigParserTests` pass: every line type in the specification, a BOM, CRLF, `=` in a value, empty values, a header with `]` inside, garbage lines ignored | `dotnet test -- --filter-class "*EditorConfigParser*"` (done) |
+| T-404 | Glob matcher: `*`, `**`, `?`, `[seq]`, `[!seq]`, `{a,b}` (nested), `{n..m}`, escapes, slash rule (relative to the `.editorconfig`'s directory, or any level when there is no slash) | CFG-004 | `src/DotnetFastFormat.Core/Config/`, `tests/DotnetFastFormat.Tests/Config/` | `GlobTests` pass with a table built from the examples in the specification and the editorconfig core tests; a pathological pattern finishes in bounded time | `dotnet test -- --filter-class "*Glob*"` (done) |
+| T-405 | Resolver: walk up from a file, nearest first, stop at `root = true` (or a ceiling); merge sections in order, nearer files last; `unset`; map keys to `FormatOptions`; invalid values warn and are ignored; unreadable files warn and are skipped; read and parse each file once per run; golden fixtures format one input under two configs | CFG-001 to CFG-006, CFG-010 to CFG-012 | `src/DotnetFastFormat.Core/Config/`, `tests/DotnetFastFormat.Tests/Config/`, `tests/DotnetFastFormat.Tests/golden/config/` | `EditorConfigResolverTests.ResolutionOrder`, `StopsAtRoot`, `UnsetRemovesAValue`, `InvalidValuesWarn`, `EachFileIsReadOnce` pass; fixtures `config/*` pass | `dotnet test -- --filter-class "*EditorConfigResolver*"` and `--filter-class "*ConfigGolden*"` (done) |
+| T-406 | CLI: resolve options per file, print each warning once on stderr, apply `charset` (add, remove or keep the BOM), update the help text | CFG-001 to CFG-012, FMT-007, CLI-003 | `src/DotnetFastFormat.Cli/`, `tests/DotnetFastFormat.Tests/CliConfigTests.cs` | `CliConfigTests` pass with temp directories holding nested `.editorconfig` files and `root = true`, a BOM added and removed, CRLF and LF output, an unreadable and an invalid `.editorconfig` (warning, exit code 0) | `dotnet test -- --filter-class "*CliConfig*"` (done) |
+| T-407 | Corpus under the files' own `.editorconfig` files (slow tier); docs: `docs/style.md`, `docs/style-changelog.md`, PRD, README, architecture, AGENTS.md status | CFG-001, CFG-002, CFG-013, FMT-001 to FMT-003 | `tests/DotnetFastFormat.Tests/Corpus/`, `docs/` | `-p:TestTier=slow` passes with 0 crashes and 100% idempotency and tree equivalence, with the default options and with each file's resolved options | `DOTNET_FAST_FORMAT_CORPUS_DIR=... dotnet test -p:TestTier=slow` (done: all six repositories pass under their own `.editorconfig` files, under three unusual settings, and through the command line twice, with the second run changing nothing) |
+
+Risks: a configuration that changes line endings or the final newline interacts with verbatim text (the
+`end_of_line` rule keeps tokens untouched, and the output check proves it); a pattern that backtracks without
+bound (T-404 bounds it); `indent_size` that does not match the indentation inside verbatim bodies (they keep the
+indentation they had until M2 prints statements); real `.editorconfig` files that use constructs the parser has not
+seen (T-407 runs them).
+
 ## Later milestones
 
 | Milestone | Scope |
 |---|---|
 | M2 | Statements, expressions, string literals: done, see above |
 | M3 | Comments and trivia; preprocessor strategy decided (ADR): planned above |
-| M4 | `.editorconfig` resolution and the first supported keys; BOM and line endings |
+| M4 | `.editorconfig` resolution and the first supported keys; BOM and line endings: planned above |
 | M5 | Parallelism, cache, benchmarks and the performance gate |
 | M6 | `--check`, `--stdin`, packaging as a .NET tool |
 | After | Stretch: the parts of `dotnet format`'s style pass that need no semantic model |

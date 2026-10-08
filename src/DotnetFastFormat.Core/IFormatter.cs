@@ -8,8 +8,14 @@ namespace DotnetFastFormat.Core;
 /// </remarks>
 public interface IFormatter
 {
-    /// <summary>Returns <paramref name="source"/> formatted.</summary>
+    /// <summary>Returns <paramref name="source"/> formatted with <see cref="FormatOptions.Default"/>.</summary>
     /// <param name="source">C# source text.</param>
     /// <returns>The formatted text.</returns>
-    string Format(string source);
+    string Format(string source) => Format(source, FormatOptions.Default);
+
+    /// <summary>Returns <paramref name="source"/> formatted with <paramref name="options"/>.</summary>
+    /// <param name="source">C# source text.</param>
+    /// <param name="options">The settings, normally resolved from <c>.editorconfig</c>.</param>
+    /// <returns>The formatted text.</returns>
+    string Format(string source, FormatOptions options);
 }

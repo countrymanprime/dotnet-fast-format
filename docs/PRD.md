@@ -60,15 +60,28 @@ Written before any code, to be revisited with a rationale doc once the printer e
 
 ## Configuration surface
 
-The tool reads `.editorconfig` (nearest file first, honoring `root = true`). Initial keys:
+The tool reads `.editorconfig` (nearest file first, honoring `root = true`) as the
+[EditorConfig specification](https://spec.editorconfig.org/) defines it, with no MSBuild
+([ADR 0012](decisions/0012-read-editorconfig-with-a-small-parser-in-core.md)). A key is added only with an ADR and a
+fixture that shows its effect. Support table (M4):
 
-- General: `indent_style`, `indent_size`, `end_of_line`, `insert_final_newline`, `max_line_length`
-- C# layout: the `csharp_new_line_*`, `csharp_indent_*`, `csharp_space_*` and
-  `csharp_preserve_single_line_*` families from Microsoft's
-  [C# formatting options](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/csharp-formatting-options)
+| Key | Values | Effect |
+|---|---|---|
+| `indent_style` | `space`, `tab` | Indentation with spaces, or tabs (and spaces for a remainder smaller than `tab_width`) |
+| `indent_size` | number 1 to 256, or `tab` | Columns per indentation level; `tab` means `tab_width` |
+| `tab_width` | number 1 to 256 | Columns a tab counts for, in indentation and in the line width |
+| `max_line_length` | number 1 to 1,000,000, or `off` | The width at which lines wrap (default 100) |
+| `end_of_line` | `lf`, `crlf` | The line terminator; also converted in copied text, comments and directives, never inside a string literal. `cr` is not supported |
+| `insert_final_newline` | `true`, `false` | One final line terminator, or none |
+| `charset` | `utf-8`, `utf-8-bom` | Remove or add a byte order mark; unset keeps the file's own. Other charsets are not supported |
+| any other key | | Ignored without a message |
 
-Which keys are honored, ignored, or deliberately deviate from `dotnet format` will be tracked in a
-support table once implemented. A key is added only with a fixture that shows its effect.
+A value that cannot be used is reported once on stderr and ignored; the exit code does not change.
+
+Planned, not yet honored: the C# layout families `csharp_new_line_*`, `csharp_indent_*`, `csharp_space_*` and
+`csharp_preserve_single_line_*` from Microsoft's
+[C# formatting options](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/csharp-formatting-options),
+each with its own ADR.
 
 ## CLI contract (proposed)
 

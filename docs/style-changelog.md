@@ -41,3 +41,18 @@ Output that changed for files that already formatted in M1:
 
 Unchanged: a file that holds only whitespace, comments and directives is still copied; a node with a comment in
 any other position is still copied.
+
+## M4 (2026-10-05)
+
+Output that depends on `.editorconfig`; a file whose configuration sets none of these keys prints as in M3:
+
+- `indent_style`, `indent_size`, `tab_width`, `max_line_length`, `end_of_line` and `insert_final_newline` now change the
+  output as described in `docs/style.md`. A repository that already sets them in `.editorconfig` sees its files change
+  the first time they are formatted, for example two-space indentation, tabs, CRLF or no final newline.
+- `charset = utf-8` removes a byte order mark that a file has, and `charset = utf-8-bom` adds one. In M3 a byte order
+  mark was always kept. Not set: still kept.
+- `end_of_line = lf` or `crlf` converts the line breaks of copied text, comments, directives and disabled text too;
+  string literals are never touched. Without the key the dominant terminator is still used and mixed input stays mixed
+  inside copied text.
+
+Unchanged: the defaults, the layout rules, and the handling of comments and directives.

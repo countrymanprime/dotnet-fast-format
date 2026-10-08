@@ -366,3 +366,35 @@ The text of a comment is never changed.
 - A `#if` that splits a header (`#if A class X : B #else class X : C #endif {`) keeps its directives and disabled text as lines;
   only the branch the parse without symbols sees is formatted. A `#if` inside a header or a parameter list copies the
   declaration.
+
+## Settings from `.editorconfig`
+
+Everything above is the output with no key applying. These keys change it
+([ADR 0012](decisions/0012-read-editorconfig-with-a-small-parser-in-core.md)); fixtures are in
+`tests/DotnetFastFormat.Tests/golden/config/`, one input formatted under several configurations.
+
+- **Which files apply.** For each file the formatter reads `.editorconfig` in its directory and every parent, nearest
+  first, and stops after a file with `root = true` in its preamble. Within a file the sections whose glob matches the
+  file's path apply in order, so a later section beats an earlier one, and a nearer file beats a farther one. A
+  section name with a `/` is relative to the directory of its `.editorconfig`; one without matches at any depth.
+  Keys are case-insensitive, and so are the values of the keys below. `unset` removes a key's earlier values.
+- **`indent_style`, `indent_size`, `tab_width`.** A level is `indent_size` columns. With `space` it is that many
+  spaces. With `tab` the printer writes as many tabs as fit in the level's columns (`columns / tab_width`) and then
+  the rest as spaces, so `indent_size = 4` with `tab_width = 8` writes four spaces at level 1, a tab at level 2 and a
+  tab and four spaces at level 3. With `tab` and no `indent_size`, `indent_size` is `tab_width` (default 4); a
+  `tab_width` that is not set is the `indent_size`. A tab counts as `tab_width` columns when deciding whether a line fits.
+- **Copied text is never re-indented.** Only the first line of a node kept as written gets the indentation; its other
+  lines, block comments and disabled text keep the whitespace they had, spaces or tabs. A tab character inside text
+  counts as one column, like any other character.
+- **`max_line_length`.** The width in columns, or `off` to never wrap (a line is still broken where the layout forces
+  a break). Default 100.
+- **`end_of_line`.** `lf` or `crlf`: every line break the formatter writes uses it, and so do the line breaks in
+  comments, directives, disabled text and copied code. A line break inside a token, which means a multi-line verbatim,
+  raw or interpolated string literal, is never changed. Not set: the most common terminator of the input, as before.
+- **`insert_final_newline`.** `true` or not set: exactly one line terminator at the end of a non-empty file. `false`:
+  none. An empty file stays empty.
+- **`charset`.** `utf-8` writes no byte order mark and `utf-8-bom` writes one (a non-empty file). Not set: the file's own
+  is kept.
+- **Values that cannot be used** (a word that is not an option, a number out of range, `end_of_line = cr`, a charset
+  other than the two above) are reported once on stderr and ignored; an earlier valid value of the key still applies.
+  Keys the formatter does not know are ignored without a message.

@@ -16,8 +16,9 @@ internal static class CommentMutator
     /// <param name="source">The file's text.</param>
     /// <param name="perKind">How many insertions of each kind.</param>
     /// <param name="seed">Makes the choice of positions repeatable.</param>
+    /// <param name="options">The formatter settings, or null for the defaults.</param>
     /// <returns>The first failure with its input, or <see langword="null"/>, and the number of failures and of files formatted.</returns>
-    public static (string? First, int Failures, int Formatted) Run(string source, int perKind, int seed)
+    public static (string? First, int Failures, int Formatted) Run(string source, int perKind, int seed, FormatOptions? options = null)
     {
         var random = new Random(seed);
         SyntaxToken[] tokens = [.. SourceParser.Parse(source).GetRoot().DescendantTokens()];
@@ -37,7 +38,7 @@ internal static class CommentMutator
                 string mutated = Mutate(source, tokens, name, random);
                 try
                 {
-                    Invariants.FormatAndCheck(new RoslynFormatter(), mutated);
+                    Invariants.FormatAndCheck(new RoslynFormatter(), mutated, options);
                     formatted++;
                 }
                 catch (FormatterException)

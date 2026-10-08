@@ -8,18 +8,19 @@ namespace DotnetFastFormat.Tests;
 /// </summary>
 public static class Invariants
 {
-    /// <summary>Formats <paramref name="source"/>, checks every invariant, and returns the output.</summary>
+    /// <summary>Formats <paramref name="source"/> with <paramref name="options"/> (the defaults when null), checks every invariant, and returns the output.</summary>
     /// <exception cref="InvariantViolationException">An invariant does not hold.</exception>
-    public static string FormatAndCheck(IFormatter formatter, string source)
+    public static string FormatAndCheck(IFormatter formatter, string source, FormatOptions? options = null)
     {
-        string output = formatter.Format(source);
+        FormatOptions settings = options ?? FormatOptions.Default;
+        string output = formatter.Format(source, settings);
         VerificationResult verdict = OutputVerifier.Verify(source, output);
         if (verdict.Violation is { } violation)
         {
             throw new InvariantViolationException(Map(violation), verdict.Message);
         }
 
-        string second = formatter.Format(output);
+        string second = formatter.Format(output, settings);
         if (!string.Equals(second, output, StringComparison.Ordinal))
         {
             throw new InvariantViolationException(Invariant.Idempotent, "Formatting the output again changed it.");

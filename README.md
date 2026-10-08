@@ -5,9 +5,11 @@ It parses with [Roslyn](https://github.com/dotnet/roslyn) syntax trees, needs no
 load, and prints through its own [doc-printer](https://github.com/prettier/prettier/blob/main/commands.md).
 Unfamiliar terms are defined in the [glossary](docs/glossary.md).
 
-> **Status: pre-code.** This repository currently holds the plan: product requirements, design
-> and decisions. There is nothing to install yet. See [`docs/TASKS.md`](docs/TASKS.md) for what
-> comes first.
+> **Status: early (M4).** The command formats `.cs` files and directories in place: usings, namespaces, type
+> declarations and member signatures, with comments and directives kept; statements and expressions are copied as
+> written until M2 lands. It reads `.editorconfig` (`indent_style`, `indent_size`, `tab_width`, `max_line_length`,
+> `end_of_line`, `insert_final_newline`, `charset`). There is nothing to install yet. See
+> [`docs/TASKS.md`](docs/TASKS.md) for the plan and [`docs/style.md`](docs/style.md) for the output.
 
 ## Why
 
