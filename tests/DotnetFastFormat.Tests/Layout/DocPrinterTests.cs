@@ -139,6 +139,25 @@ public class DocPrinterTests
     }
 
     [Fact]
+    public void AStringLiteralWithALineBreakOnlyCountsUpToTheBreakAndKeepsItsGroupFlat()
+    {
+        Doc doc = Docs.Group(Docs.Concat(Docs.Text("f("), Docs.SoftLine, Docs.Verbatim("@\"a\nb\"", forcesBreak: false), Docs.SoftLine, Docs.Text(")")));
+
+        Assert.False(doc.ForcesBreak);
+        Assert.Equal("f(@\"a\nb\")", Print(doc, width: 10));
+        Assert.Equal("f(\n@\"a\nb\"\n)", Print(doc, width: 4));
+    }
+
+    [Fact]
+    public void WhatFollowsAStringLiteralWithALineBreakIsMeasuredFromItsLastLine()
+    {
+        Doc doc = Docs.Group(Docs.Concat(Docs.Verbatim("a\nbbbb", forcesBreak: false), Docs.Line, Docs.Text("cc")));
+
+        Assert.Equal("a\nbbbb cc", Print(doc, width: 8));
+        Assert.Equal("a\nbbbb\ncc", Print(doc, width: 6));
+    }
+
+    [Fact]
     public void SingleLineVerbatimTextCountsTowardsTheWidth()
     {
         Doc doc = Docs.Group(Docs.Concat(Docs.Text("aa"), Docs.Line, Docs.Verbatim("bbbb")));
@@ -224,6 +243,72 @@ public class DocPrinterTests
                     Docs.Text("y"),
                     Docs.HardLine,
                     Docs.ColumnZero(Docs.Concat(Docs.Text("z"), Docs.HardLine, Docs.Text("w"))))))));
+
+    [Fact]
+    public void AForcedGroupBreaksEvenWhenItFits() =>
+        Assert.Equal("a\nb", Print(Docs.Group(Docs.Concat(Docs.Text("a"), Docs.Line, Docs.Text("b")), forceBreak: true), width: 100));
+
+    [Fact]
+    public void AForcedGroupBreaksItsEnclosingGroups()
+    {
+        Doc inner = Docs.Group(Docs.Concat(Docs.Text("x"), Docs.Line, Docs.Text("y")), forceBreak: true);
+
+        Assert.Equal("a\nx\ny", Print(Docs.Group(Docs.Concat(Docs.Text("a"), Docs.Line, inner)), width: 100));
+    }
+
+    [Fact]
+    public void AConditionalGroupPrintsTheFirstLayoutThatFits()
+    {
+        Doc doc = Docs.Conditional(Docs.Text("one line"), Docs.Text("second"), Docs.Text("last"));
+
+        Assert.Equal("one line", Print(doc, width: 8));
+        Assert.Equal("second", Print(doc, width: 7));
+    }
+
+    [Fact]
+    public void AConditionalGroupPrintsItsLastLayoutBrokenWhenNoneFits()
+    {
+        Doc doc = Docs.Conditional(Docs.Text("long text here"), Docs.Group(Docs.Concat(Docs.Text("a"), Docs.Line, Docs.Text("b"))));
+
+        Assert.Equal("a\nb", Print(doc, width: 2));
+    }
+
+    [Fact]
+    public void ALayoutWithAForcedBreakFitsWhenTheTextBeforeTheBreakFits()
+    {
+        // f(x => { ... }): the opening line fits, so the layout that opens the last argument is chosen.
+        Doc hugged = Docs.Concat(Docs.Text("f(x =>"), Docs.HardLine, Docs.Text("{ }"), Docs.Text(")"));
+        Doc broken = Docs.Group(Docs.Concat(Docs.Text("f("), Docs.Indent(Docs.Concat(Docs.SoftLine, Docs.Text("x => { }"))), Docs.SoftLine, Docs.Text(")")));
+        Doc doc = Docs.Conditional(hugged, broken);
+
+        Assert.Equal("f(x =>\n{ })", Print(doc, width: 6));
+        Assert.Equal("f(\n    x => { }\n)", Print(doc, width: 5));
+    }
+
+    [Fact]
+    public void AConditionalGroupDoesNotBreakItsEnclosingGroupButWillBreakSaysSo()
+    {
+        Doc conditional = Docs.Conditional(Docs.Concat(Docs.Text("x"), Docs.HardLine, Docs.Text("y")), Docs.Text("z"));
+        Doc group = Docs.Group(Docs.Concat(Docs.Text("a"), Docs.Line, conditional));
+
+        Assert.False(conditional.ForcesBreak);
+        Assert.True(conditional.WillBreak);
+        Assert.Equal("a x\ny", Print(group, width: 100));
+    }
+
+    [Fact]
+    public void TenThousandNestedConditionalGroupsDoNotOverflowTheStack()
+    {
+        Doc doc = Docs.Text("x");
+        for (int i = 0; i < 10_000; i++)
+        {
+            doc = Docs.Conditional(Docs.Concat(Docs.Text("("), doc, Docs.Text(")")), Docs.Text("?"));
+        }
+
+        string output = Print(doc, width: 100_000, indentSize: 0);
+
+        Assert.Equal(10_000, output.Count(c => c == '('));
+    }
 
     private static string Print(Doc doc, int width = 20, int indentSize = 4, string newLine = "\n") =>
         DocPrinter.Print(doc, new DocPrintOptions(width, indentSize, newLine));

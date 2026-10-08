@@ -6,13 +6,16 @@ namespace DotnetFastFormat.Core.Printers;
 /// <summary>Reads the trivia around a token into the shapes the printers can place (ADR 0010).</summary>
 internal static class TriviaLines
 {
+    private static readonly LeadingTrivia NoLines = new([], BlankLineAfter: false);
+    private static readonly LeadingTrivia NoLinesBlankAfter = new([], BlankLineAfter: true);
+
     /// <summary>Reads the trivia before a token.</summary>
     /// <param name="trivia">The token's leading trivia, which starts at the beginning of a line.</param>
     /// <param name="atEndOfFile">Whether the token is the end of the file, where a last comment needs no line end.</param>
     /// <returns>The own-line pieces, or <see langword="null"/> when a comment shares its line with code or another comment.</returns>
     public static LeadingTrivia? ParseLeading(SyntaxTriviaList trivia, bool atEndOfFile)
     {
-        var lines = new List<TriviaLine>();
+        List<TriviaLine>? lines = null;
         int blanks = 0;
         bool lineOpen = false;
 
@@ -43,12 +46,18 @@ internal static class TriviaLines
                 return null;
             }
 
-            lines.Add(new TriviaLine(entry.Kind, entry.Text, blanks > 0, entry.RawText));
+            (lines ??= []).Add(new TriviaLine(entry.Kind, entry.Text, blanks > 0, entry.RawText));
             blanks = 0;
             lineOpen = entry.LineStaysOpen;
         }
 
-        return lineOpen && !atEndOfFile ? null : new LeadingTrivia(lines, blanks > 0);
+        if (lineOpen && !atEndOfFile)
+        {
+            return null;
+        }
+
+        // Most nodes have no comment above them, so the common answers are shared.
+        return lines is null ? (blanks > 0 ? NoLinesBlankAfter : NoLines) : new LeadingTrivia(lines, blanks > 0);
     }
 
     /// <summary>Reads the trivia after a token, up to the end of its line.</summary>

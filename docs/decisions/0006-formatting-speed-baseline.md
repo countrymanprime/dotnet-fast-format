@@ -79,6 +79,49 @@ input again and the output once, while the formatter parses the input once, so p
 the ratio above, but it is the largest single cost today. A follow-up could pass the formatter's input tree to the
 verifier and save one parse; that is not done here, and the check stays always on.
 
+## Measurement with statements and expressions (M2, T-212)
+
+Measured on 2026-10-05 in a 4-core cloud container (SDK 10.0.112), the formatter at the T-212 commit against CSharpier
+1.3.0, three runs each, one tool at a time, the same harness as above. The formatter now prints bodies, expressions,
+attributes and the other members, so it does the work CSharpier does; about 2.4 percent of the corpus's characters are
+still copied as written code, 3.6 percent are multi-line strings, and 8.8 percent are disabled `#if` text and files that
+sit wholly inside one (measured by `CorpusVerbatimShareTests`).
+
+| Repository | CSharpier 1.3.0 | dotnet-fast-format (M2, with output check) | Ratio |
+|---|---|---|---:|
+| newtonsoft-json | 10.1 s (9.9–10.1) | 3.4 s (3.4–3.6) | 0.34 |
+| dapper | 1.8 s (1.8–1.9) | 1.1 s (1.1–1.1) | 0.61 |
+| serilog | 1.4 s (1.3–1.5) | 1.0 s (1.0–1.0) | 0.71 |
+| humanizer | 2.1 s (1.9–2.1) | 1.8 s (1.7–1.8) | 0.86 |
+| spectre-console | 1.4 s (1.4–1.5) | 2.0 s (1.9–2.0) | 1.43 |
+| communitytoolkit-dotnet | 3.0 s (2.4–3.3) | 2.2 s (2.1–2.2) | 0.73 |
+| **Total** | **19.7 s** | **11.4 s** | **0.58** |
+
+That is **0.58 times CSharpier**, inside the 1.5 times target and inside parity. How it got there matters more than the
+final figure, because the first measurement missed the stretch goal and the figure above rests partly on settings:
+
+| Step | CSharpier | dotnet-fast-format | Ratio |
+|---|---|---|---:|
+| First run with statements and expressions printed (commit `5d028cb`) | 19.7 s | 26.6 s | 1.35 |
+| The output check shares the formatter's parse and compares without allocating; printing allocates less | 19.3 s | 22.7 s | 1.18 |
+| Runtime settings for a short run in the CLI project (`TieredPGO` off, no tier-up delay) | 19.7 s | 11.4 s | 0.58 |
+
+- The first row is the real cost of the new printers plus the check, and it is **within the 1.5 times target but not
+  by a wide margin**; repositories made of dense code (spectre-console, 2.9 times in that run) were far above it.
+- The largest win is not an algorithm. A run lasts seconds, so most of it was spent running not-yet-optimized code:
+  disabling profile-guided instrumentation and the 100 ms delay before call counting starts cut the run by about 45
+  percent (spectre-console alone: 3.8 s to 1.9 s). In-process, with warm-up, the same repository takes 0.55 s, so what
+  is left above that is JIT time, which ReadyToRun compilation would remove.
+- Newtonsoft.Json's low ratio comes from its files: about 12 percent of its characters are disabled `#if` text, and
+  many files hold nothing but an `#if` block, which costs almost nothing to copy; CSharpier formats all of them. The
+  other repositories give 0.6 to 1.4.
+- CSharpier uses all four cores, and this formatter runs files one after another until M5, so its time is a floor
+  on what parallel runs will cost, not a ceiling.
+- The output check ([ADR 0009](0009-self-check-output-before-writing.md)) now takes about 30 percent of format plus check in-process
+  (humanizer: 0.56 s to format, 0.27 s to check; M1: 50 to 71 percent), after the input parse was shared.
+- The tuning is two lines in `src/DotnetFastFormat.Cli/DotnetFastFormat.Cli.csproj`; the benchmark harness runs the
+  CLI as built, so it includes them.
+
 ## Decision outcome
 
 Express the speed target and the regression gate as **ratios measured in the same run**, never in seconds:

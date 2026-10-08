@@ -14,15 +14,16 @@ internal static class TypePrinter
     /// <returns>The document, or <see langword="null"/> when the declaration has syntax this printer leaves verbatim.</returns>
     public static Doc? Print(TypeDeclarationSyntax type, NodeBuilder builder)
     {
-        if (type.AttributeLists.Count > 0
-            || type.BaseList?.Types.Any(t => t is PrimaryConstructorBaseTypeSyntax) == true
+        if (type.BaseList?.Types.Any(t => t is PrimaryConstructorBaseTypeSyntax) == true
             || type.TypeParameterList?.DescendantNodes().OfType<AttributeListSyntax>().Any() == true)
         {
             builder.Reject();
             return null;
         }
 
-        return Finish(type, Header(type, builder), builder);
+        Doc attributes = MemberPrinter.Attributes(type.AttributeLists, builder);
+        Doc? declaration = Finish(type, Header(type, builder), builder);
+        return declaration is null ? null : Docs.Concat(attributes, declaration);
     }
 
     private static Doc Header(TypeDeclarationSyntax type, NodeBuilder builder)
@@ -70,28 +71,33 @@ internal static class TypePrinter
         }
 
         LeadingTrivia? closing = TriviaLines.ParseLeading(type.CloseBraceToken.LeadingTrivia, atEndOfFile: false);
-        if (closing is null)
+        OpenBrace? brace = BraceLayout.Open(type.OpenBraceToken, builder);
+        if (closing is null || brace is not { } open)
         {
             builder.Reject();
             return null;
         }
 
-        Doc open = builder.Token(type.OpenBraceToken);
         Doc close = builder.Token(type.CloseBraceToken, leadingHandled: true);
         Doc semicolon = type.SemicolonToken.IsKind(SyntaxKind.None) ? Docs.Empty : builder.Token(type.SemicolonToken);
-        if (type.Members.Count == 0 && closing.Lines.Count == 0)
+        if (type.Members.Count == 0 && closing.Lines.Count == 0 && open.IsPlain)
         {
             // An empty body stays on the header's last line, or goes on its own line when the header wrapped.
-            Doc empty = Docs.Concat(open, Docs.Text(" "), close, semicolon);
+            Doc empty = Docs.Concat(open.Doc, Docs.Text(" "), close, semicolon);
             return Docs.Group(Docs.Concat(
                 declaration,
                 Docs.IfBreak(Docs.Concat(Docs.HardLine, empty), Docs.Concat(Docs.Text(" "), empty))));
         }
 
+        if (type.Members.Count == 0 && closing.Lines.Count == 0)
+        {
+            return Docs.Concat(Docs.Group(declaration), Docs.HardLine, open.Doc, open.HasComment ? Docs.HardLine : Docs.Text(" "), close, semicolon);
+        }
+
         return Docs.Concat(
             Docs.Group(declaration),
             Docs.HardLine,
-            open,
+            open.Doc,
             Docs.Indent(Docs.Concat(Docs.HardLine, MemberList.Print([.. type.Members], closing))),
             Docs.HardLine,
             close,

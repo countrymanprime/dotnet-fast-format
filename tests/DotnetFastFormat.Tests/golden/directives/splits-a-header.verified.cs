@@ -1,10 +1,10 @@
 ﻿#if A
 class   X : B
 #else
-class   X : C
+class X : C
 #endif
 {
-    int   v;
+    int v;
 }
 
 class After { }

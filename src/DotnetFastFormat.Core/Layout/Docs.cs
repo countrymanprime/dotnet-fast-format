@@ -3,6 +3,8 @@ namespace DotnetFastFormat.Core.Layout;
 /// <summary>Builders for the documents the printer lays out.</summary>
 internal static class Docs
 {
+    private static readonly Doc?[] SingleCharacters = new Doc?[128];
+
     /// <summary>Gets a document that prints nothing.</summary>
     public static Doc Empty { get; } = new ConcatDoc([]);
 
@@ -18,12 +20,22 @@ internal static class Docs
     /// <summary>Creates single-line text.</summary>
     /// <param name="value">The text, which must not contain a line break.</param>
     /// <returns>The document.</returns>
-    public static Doc Text(string value) => new TextDoc(value);
+    public static Doc Text(string value)
+    {
+        // Single characters (a space, a comma, a parenthesis) are most of the text a printer writes.
+        if (value.Length == 1 && value[0] < SingleCharacters.Length)
+        {
+            return SingleCharacters[value[0]] ??= new TextDoc(value);
+        }
+
+        return new TextDoc(value);
+    }
 
     /// <summary>Creates source text that is emitted exactly as written.</summary>
     /// <param name="value">The text, which may contain line breaks.</param>
+    /// <param name="forcesBreak">Whether a line break in the text makes every enclosing group break. A string literal passes <see langword="false"/>.</param>
     /// <returns>The document.</returns>
-    public static Doc Verbatim(string value) => new VerbatimDoc(value);
+    public static Doc Verbatim(string value, bool forcesBreak = true) => new VerbatimDoc(value, forcesBreak);
 
     /// <summary>Creates a document that prints its parts in order.</summary>
     /// <param name="parts">The parts.</param>
@@ -37,8 +49,14 @@ internal static class Docs
 
     /// <summary>Creates a group that is flat when it fits and broken otherwise.</summary>
     /// <param name="contents">The grouped document.</param>
+    /// <param name="forceBreak">Whether the group is always broken, whatever its width.</param>
     /// <returns>The document.</returns>
-    public static Doc Group(Doc contents) => new GroupDoc(contents);
+    public static Doc Group(Doc contents, bool forceBreak = false) => new GroupDoc(contents, forceBreak);
+
+    /// <summary>Creates a choice between layouts: the first that fits is printed, else the last one broken.</summary>
+    /// <param name="states">The layouts, most preferred first.</param>
+    /// <returns>The document.</returns>
+    public static Doc Conditional(params Doc[] states) => new ConditionalGroupDoc(states);
 
     /// <summary>Creates a document whose line breaks are indented one level deeper.</summary>
     /// <param name="contents">The indented document.</param>

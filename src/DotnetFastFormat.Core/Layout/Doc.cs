@@ -9,7 +9,14 @@ internal abstract class Doc
 {
     /// <summary>
     /// Gets a value indicating whether this document contains a line break that is always taken (a hard line or
-    /// multi-line verbatim text). Every enclosing group must then break.
+    /// multi-line verbatim text). Every enclosing group must then break. A conditional group does not pass this
+    /// on, because it can choose a layout in which the break is the only one (see <see cref="ConditionalGroupDoc"/>).
     /// </summary>
     public bool ForcesBreak { get; protected init; }
+
+    /// <summary>
+    /// Gets a value indicating whether this document contains a line break that is always taken anywhere inside it,
+    /// including inside a conditional group. Printers use it to decide between layouts before the width is known.
+    /// </summary>
+    public bool WillBreak { get; protected init; }
 }

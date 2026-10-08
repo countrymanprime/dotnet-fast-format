@@ -8,7 +8,11 @@ internal sealed class ConcatDoc : Doc
     public ConcatDoc(IReadOnlyList<Doc> parts)
     {
         Parts = parts;
-        ForcesBreak = parts.Any(part => part.ForcesBreak);
+        for (int i = 0; i < parts.Count; i++)
+        {
+            ForcesBreak |= parts[i].ForcesBreak;
+            WillBreak |= parts[i].WillBreak;
+        }
     }
 
     /// <summary>Gets the documents, in order.</summary>

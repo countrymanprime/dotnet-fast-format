@@ -1,9 +1,11 @@
 ﻿class Calc
 {
     public int Add(int a, int b)
-    { return a+b; }
+    {
+        return a + b;
+    }
 
-    public int Twice(int x) => x*2;
+    public int Twice(int x) => x * 2;
 
     void Nothing() { }
 
@@ -12,10 +14,14 @@
         string prefix = "p",
         int retries = 3
     )
-    { await Task.Yield(); }
+    {
+        await Task.Yield();
+    }
 
     public T Pick<T>(T a, T b) where T : class, IComparable<T>
-    { return a; }
+    {
+        return a;
+    }
 
     void Wrapped<TFirst, TSecond>(TFirst first, TSecond second)
         where TFirst : class

@@ -12,6 +12,22 @@ internal static class TriviaRules
     public static bool IsCommentOrDirective(SyntaxTrivia trivia) =>
         !trivia.IsKind(SyntaxKind.WhitespaceTrivia) && !trivia.IsKind(SyntaxKind.EndOfLineTrivia);
 
+    /// <summary>Returns whether <paramref name="trivia"/> holds a comment, a documentation comment, a directive or disabled text. It allocates nothing.</summary>
+    /// <param name="trivia">The trivia list to inspect.</param>
+    /// <returns><see langword="true"/> when something other than whitespace and line ends is in the list.</returns>
+    public static bool HasCommentOrDirective(SyntaxTriviaList trivia)
+    {
+        foreach (SyntaxTrivia piece in trivia)
+        {
+            if (IsCommentOrDirective(piece))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>Counts the blank lines before the first token of <paramref name="node"/>, up to its first comment or directive.</summary>
     /// <param name="node">The node whose leading trivia is read.</param>
     /// <returns>The number of blank lines the author left above the node.</returns>

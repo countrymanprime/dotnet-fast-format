@@ -46,24 +46,29 @@ internal static class NamespacePrinter
 
         var block = (NamespaceDeclarationSyntax)ns;
         LeadingTrivia? closing = TriviaLines.ParseLeading(block.CloseBraceToken.LeadingTrivia, atEndOfFile: false);
-        if (closing is null)
+        OpenBrace? brace = BraceLayout.Open(block.OpenBraceToken, builder);
+        if (closing is null || brace is not { } open)
         {
             builder.Reject();
             return null;
         }
 
-        Doc open = builder.Token(block.OpenBraceToken);
         Doc close = builder.Token(block.CloseBraceToken, leadingHandled: true);
         Doc trailing = block.SemicolonToken.IsKind(SyntaxKind.None)
             ? Docs.Empty
             : builder.Token(block.SemicolonToken);
 
-        return children.Count == 0 && closing.Lines.Count == 0
-            ? Docs.Concat(header, Docs.Text(" "), open, Docs.Text(" "), close, trailing)
-            : Docs.Concat(
+        if (children.Count == 0 && closing.Lines.Count == 0)
+        {
+            return open.IsPlain
+                ? Docs.Concat(header, Docs.Text(" "), open.Doc, Docs.Text(" "), close, trailing)
+                : Docs.Concat(header, Docs.HardLine, open.Doc, open.HasComment ? Docs.HardLine : Docs.Text(" "), close, trailing);
+        }
+
+        return Docs.Concat(
                 header,
                 Docs.HardLine,
-                open,
+                open.Doc,
                 Docs.Indent(Docs.Concat(Docs.HardLine, MemberList.Print(children, closing))),
                 Docs.HardLine,
                 close,

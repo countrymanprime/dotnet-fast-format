@@ -6,13 +6,15 @@
         : this(size, "w") { }
 
     public Widget(int size, string name)
-        : base( )
+        : base()
     {
         Size = size;
     }
 
     static Widget()
-    { Init(); }
+    {
+        Init();
+    }
 
     protected Widget(
         VeryLongTypeNameNumberOne firstArgument,

@@ -11,7 +11,11 @@ internal sealed class FillDoc : Doc
     public FillDoc(IReadOnlyList<Doc> parts)
     {
         Parts = parts;
-        ForcesBreak = parts.Any(part => part.ForcesBreak);
+        for (int i = 0; i < parts.Count; i++)
+        {
+            ForcesBreak |= parts[i].ForcesBreak;
+            WillBreak |= parts[i].WillBreak;
+        }
     }
 
     /// <summary>Gets the alternating items and separators.</summary>

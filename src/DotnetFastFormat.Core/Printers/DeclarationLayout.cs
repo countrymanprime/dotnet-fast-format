@@ -49,24 +49,19 @@ internal static class DeclarationLayout
     {
         if (block is not null)
         {
-            bool empty = block.Statements.Count == 0
-                && !builder.HasUnprintedTrivia(block.OpenBraceToken)
-                && !builder.HasUnprintedTrivia(block.CloseBraceToken, leadingHandled: false);
-            return empty
-                ? (MemberBodyKind.EmptyBlock, Docs.Text("{ }"))
-                : (MemberBodyKind.Block, builder.Verbatim(block, startsOwnLine: true));
+            Doc? printed = StatementPrinter.Block(block, builder);
+            if (printed is null)
+            {
+                return (MemberBodyKind.Block, Docs.Empty);
+            }
+
+            return (StatementPrinter.IsEmpty(block, openIsFirst: false) ? MemberBodyKind.EmptyBlock : MemberBodyKind.Block, printed);
         }
 
         if (expression is not null)
         {
-            return (
-                MemberBodyKind.Expression,
-                Docs.Concat(
-                    Docs.Text(" "),
-                    builder.Token(expression.ArrowToken),
-                    Docs.Text(" "),
-                    builder.Verbatim(expression.Expression),
-                    builder.Token(semicolon)));
+            Doc arrow = Docs.Concat(Docs.Text(" "), builder.Token(expression.ArrowToken));
+            return (MemberBodyKind.Expression, Docs.Concat(AssignmentLayout.ArrowValue(arrow, expression.Expression, builder), builder.Token(semicolon)));
         }
 
         return (MemberBodyKind.Semicolon, builder.Token(semicolon));

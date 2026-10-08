@@ -1,7 +1,10 @@
 ﻿class A { }
 
 [Serializable]
-class   B   {  int   x ;  }
+class B
+{
+    int x;
+}
 
 // commented
 class C { }

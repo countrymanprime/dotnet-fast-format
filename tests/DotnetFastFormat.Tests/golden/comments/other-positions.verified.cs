@@ -17,6 +17,7 @@ class B // after header
     int w;
 }
 
-class C { // after brace
+class C
+{ // after brace
     int v;
 }

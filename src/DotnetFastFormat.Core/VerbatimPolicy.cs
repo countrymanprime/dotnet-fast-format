@@ -24,8 +24,22 @@ internal static class VerbatimPolicy
     /// below them, relative to where the directive is, so reflowing the lines below would change them. <c>#line default</c>
     /// and <c>#line hidden</c> do not.
     /// </summary>
-    private static bool RemapsLines(CompilationUnitSyntax root) =>
-        root.DescendantNodes(descendIntoTrivia: true).Any(n =>
-            n is LineSpanDirectiveTriviaSyntax
-            || (n is LineDirectiveTriviaSyntax line && !line.Line.IsKind(SyntaxKind.DefaultKeyword) && !line.Line.IsKind(SyntaxKind.HiddenKeyword)));
+    private static bool RemapsLines(CompilationUnitSyntax root)
+    {
+        if (!root.ContainsDirectives)
+        {
+            return false;
+        }
+
+        for (DirectiveTriviaSyntax? directive = root.GetFirstDirective(); directive is not null; directive = directive.GetNextDirective())
+        {
+            if (directive is LineSpanDirectiveTriviaSyntax
+                || (directive is LineDirectiveTriviaSyntax line && !line.Line.IsKind(SyntaxKind.DefaultKeyword) && !line.Line.IsKind(SyntaxKind.HiddenKeyword)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

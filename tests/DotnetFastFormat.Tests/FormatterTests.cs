@@ -9,9 +9,39 @@ public class FormatterTests
     [Fact]
     public void UnsupportedNodesAreVerbatim()
     {
-        const string Source = "enum   E\n{\n  A ,  B\n}\n";
+        const string Source = "class   E<[Foo] T>\n{\n  int   a ;\n}\n";
 
         Assert.Equal(Source, Invariants.FormatAndCheck(Formatter, Source));
+    }
+
+    [Fact]
+    public void AStatementWithACommentInsideIsVerbatimAndItsNeighboursAreFormatted()
+    {
+        const string Source = "class C\n{\n  void M()\n  {\n    int   a = 1;\n    int   b =   /* why */   2;\n    int   c = 3;\n  }\n}\n";
+
+        Assert.Equal(
+            "class C\n{\n    void M()\n    {\n        int a = 1;\n        int   b =   /* why */   2;\n        int c = 3;\n    }\n}\n",
+            Invariants.FormatAndCheck(Formatter, Source));
+    }
+
+    [Fact]
+    public void AnExpressionWithNoPrinterIsVerbatimInsideAFormattedStatement()
+    {
+        const string Source = "class C\n{\n  void M()\n  {\n    var   q =   from   x in xs   select   x ;\n  }\n}\n";
+
+        Assert.Equal(
+            "class C\n{\n    void M()\n    {\n        var q = from   x in xs   select   x;\n    }\n}\n",
+            Invariants.FormatAndCheck(Formatter, Source));
+    }
+
+    [Fact]
+    public void StatementsAreWrittenWithTheDominantLineEndingAndKeepTheLineEndingsInsideStrings()
+    {
+        const string Source = "class C\r\n{\r\n  void M()\r\n  {\r\n    if(a)b();\r\n    var s = @\"x\r\ny\";\r\n  }\r\n}\r\n";
+
+        Assert.Equal(
+            "class C\r\n{\r\n    void M()\r\n    {\r\n        if (a)\r\n            b();\r\n        var s = @\"x\r\ny\";\r\n    }\r\n}\r\n",
+            Invariants.FormatAndCheck(Formatter, Source));
     }
 
     [Fact]
@@ -81,8 +111,8 @@ public class FormatterTests
     [InlineData("class C { }", "class C { }\n")]
     [InlineData("class C { }\n\n\n", "class C { }\n")]
     [InlineData("class C { }\r\n\r\n", "class C { }\r\n")]
-    [InlineData("enum E\r\n{\r\n}", "enum E\r\n{\r\n}\r\n")]
-    [InlineData("enum E\n{\r\n}\n", "enum E\n{\r\n}\n")]
+    [InlineData("class   E<[Foo] T>\r\n{\r\n}", "class   E<[Foo] T>\r\n{\r\n}\r\n")]
+    [InlineData("class   E<[Foo] T>\n{\r\n}\n", "class   E<[Foo] T>\n{\r\n}\n")]
     [InlineData("", "")]
     public void EndsWithExactlyOneNewlineInTheDominantLineEnding(string source, string expected) =>
         Assert.Equal(expected, Formatter.Format(source));

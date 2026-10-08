@@ -9,6 +9,7 @@ internal sealed class LineDoc : Doc
     {
         Kind = kind;
         ForcesBreak = kind == LineKind.Hard;
+        WillBreak = ForcesBreak;
     }
 
     /// <summary>Gets what the line prints when flat.</summary>

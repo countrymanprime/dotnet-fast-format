@@ -9,6 +9,11 @@ namespace DotnetFastFormat.Core.Layout;
 /// </summary>
 internal static class DocPrinter
 {
+    private static readonly List<Command> NoCommands = [];
+
+    [ThreadStatic]
+    private static List<(Mode Mode, Doc Doc)>? measureStack;
+
     private enum Mode
     {
         Break,
@@ -64,7 +69,11 @@ internal static class DocPrinter
                 break;
 
             case GroupDoc group:
-                PrintGroup(group, command, commands, state.Options.Width - state.Position);
+                PrintGroup(group, command, commands, state.Options.Width - state.Position, state.Options.Width);
+                break;
+
+            case ConditionalGroupDoc conditional:
+                PrintConditional(conditional, command, commands, state.Options.Width - state.Position, state.Options.Width);
                 break;
 
             case LineDoc line:
@@ -72,7 +81,7 @@ internal static class DocPrinter
                 break;
 
             case FillDoc fill:
-                PrintFill(fill, command, commands, state.Options.Width - state.Position);
+                PrintFill(fill, command, commands, state.Options.Width - state.Position, state.Options.Width);
                 break;
 
             case LineSuffixDoc suffix:
@@ -93,7 +102,7 @@ internal static class DocPrinter
         }
     }
 
-    private static void PrintGroup(GroupDoc group, Command command, List<Command> commands, int remaining)
+    private static void PrintGroup(GroupDoc group, Command command, List<Command> commands, int remaining, int width)
     {
         if (command.Mode == Mode.Flat)
         {
@@ -102,12 +111,34 @@ internal static class DocPrinter
         }
 
         var flat = new Command(command.Indent, Mode.Flat, group.Contents);
-        commands.Add(!group.ForcesBreak && Fits(flat, commands, remaining, mustBeFlat: false)
+        commands.Add(!group.ForcesBreak && Fits(flat, commands, remaining, width, mustBeFlat: false)
             ? flat
             : new Command(command.Indent, Mode.Break, group.Contents));
     }
 
-    private static void PrintFill(FillDoc fill, Command command, List<Command> commands, int remaining)
+    private static void PrintConditional(ConditionalGroupDoc group, Command command, List<Command> commands, int remaining, int width)
+    {
+        IReadOnlyList<Doc> states = group.States;
+        if (command.Mode == Mode.Flat)
+        {
+            commands.Add(new Command(command.Indent, states[0].ForcesBreak ? Mode.Break : Mode.Flat, states[0]));
+            return;
+        }
+
+        for (int i = 0; i < states.Count - 1; i++)
+        {
+            var candidate = new Command(command.Indent, Mode.Flat, states[i]);
+            if (Fits(candidate, commands, remaining, width, mustBeFlat: false))
+            {
+                commands.Add(candidate);
+                return;
+            }
+        }
+
+        commands.Add(new Command(command.Indent, Mode.Break, states[^1]));
+    }
+
+    private static void PrintFill(FillDoc fill, Command command, List<Command> commands, int remaining, int width)
     {
         IReadOnlyList<Doc> parts = fill.Parts;
         int left = parts.Count - command.FillOffset;
@@ -119,7 +150,7 @@ internal static class DocPrinter
         Doc content = parts[command.FillOffset];
         var contentFlat = new Command(command.Indent, Mode.Flat, content);
         var contentBroken = new Command(command.Indent, Mode.Break, content);
-        bool contentFits = Fits(contentFlat, [], remaining, mustBeFlat: true);
+        bool contentFits = Fits(contentFlat, NoCommands, remaining, width, mustBeFlat: true);
 
         if (left == 1)
         {
@@ -140,7 +171,7 @@ internal static class DocPrinter
 
         Doc second = parts[command.FillOffset + 2];
         var pair = new Command(command.Indent, Mode.Flat, new ConcatDoc([content, separator, second]));
-        bool pairFits = Fits(pair, [], remaining, mustBeFlat: true);
+        bool pairFits = Fits(pair, NoCommands, remaining, width, mustBeFlat: true);
 
         commands.Add(new Command(command.Indent, command.Mode, fill, command.FillOffset + 2));
         if (pairFits)
@@ -164,9 +195,11 @@ internal static class DocPrinter
     /// Whether <paramref name="next"/> fits in <paramref name="remaining"/> columns, counting what follows it up to
     /// the first line break that will be taken.
     /// </summary>
-    private static bool Fits(Command next, List<Command> rest, int remaining, bool mustBeFlat)
+    private static bool Fits(Command next, List<Command> rest, int remaining, int width, bool mustBeFlat)
     {
-        var stack = new List<(Mode Mode, Doc Doc)> { (next.Mode, next.Doc) };
+        List<(Mode Mode, Doc Doc)> stack = measureStack ??= [];
+        stack.Clear();
+        stack.Add((next.Mode, next.Doc));
         int restIndex = rest.Count;
 
         while (remaining >= 0)
@@ -186,7 +219,7 @@ internal static class DocPrinter
             (Mode mode, Doc doc) = stack[^1];
             stack.RemoveAt(stack.Count - 1);
 
-            FitResult result = Measure(mode, doc, stack, ref remaining, mustBeFlat);
+            FitResult result = Measure(mode, doc, stack, ref remaining, width, mustBeFlat);
             if (result != FitResult.Continue)
             {
                 return result == FitResult.Fits;
@@ -196,7 +229,7 @@ internal static class DocPrinter
         return false;
     }
 
-    private static FitResult Measure(Mode mode, Doc doc, List<(Mode Mode, Doc Doc)> stack, ref int remaining, bool mustBeFlat)
+    private static FitResult Measure(Mode mode, Doc doc, List<(Mode Mode, Doc Doc)> stack, ref int remaining, int width, bool mustBeFlat)
     {
         switch (doc)
         {
@@ -205,14 +238,7 @@ internal static class DocPrinter
                 break;
 
             case VerbatimDoc verbatim:
-                int firstBreak = verbatim.Value.AsSpan().IndexOfAny('\r', '\n');
-                if (firstBreak >= 0)
-                {
-                    return remaining - firstBreak >= 0 ? FitResult.Fits : FitResult.DoesNotFit;
-                }
-
-                remaining -= verbatim.Value.Length;
-                break;
+                return MeasureVerbatim(verbatim, ref remaining, width);
 
             case GroupDoc group:
                 if (mustBeFlat && group.ForcesBreak)
@@ -236,11 +262,43 @@ internal static class DocPrinter
 
                 break;
 
+            case ConditionalGroupDoc conditional:
+                stack.Add((mode, mode == Mode.Break ? conditional.States[^1] : conditional.States[0]));
+                break;
+
             default:
                 Expand(mode, doc, stack);
                 break;
         }
 
+        return FitResult.Continue;
+    }
+
+    /// <summary>
+    /// Text with a forced line break ends the measure at its first line break. A string literal that spans lines needs its
+    /// first line to fit, and what follows it starts after its last line, so the width left is measured from there.
+    /// </summary>
+    private static FitResult MeasureVerbatim(VerbatimDoc verbatim, ref int remaining, int width)
+    {
+        ReadOnlySpan<char> value = verbatim.Value.AsSpan();
+        int firstBreak = value.IndexOfAny('\r', '\n');
+        if (firstBreak < 0)
+        {
+            remaining -= value.Length;
+            return FitResult.Continue;
+        }
+
+        if (remaining - firstBreak < 0)
+        {
+            return FitResult.DoesNotFit;
+        }
+
+        if (verbatim.ForcesBreak)
+        {
+            return FitResult.Fits;
+        }
+
+        remaining = width - (value.Length - value.LastIndexOfAny('\r', '\n') - 1);
         return FitResult.Continue;
     }
 

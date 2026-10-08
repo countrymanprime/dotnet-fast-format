@@ -13,6 +13,7 @@ internal sealed class ColumnZeroDoc : Doc
     {
         Contents = contents;
         ForcesBreak = contents.ForcesBreak;
+        WillBreak = contents.WillBreak;
     }
 
     /// <summary>Gets the document printed from column 0.</summary>

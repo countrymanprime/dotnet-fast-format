@@ -11,8 +11,9 @@ internal static class MemberList
     /// <summary>Prints <paramref name="items"/>, each on its own line, separated as the style requires.</summary>
     /// <param name="items">The sibling nodes, in source order.</param>
     /// <param name="closing">The own-line comments and directives before the closing brace or the end of the file, printed after the last item.</param>
+    /// <param name="lastTrailingByAncestor">Whether the last item ends on the same token as the node that contains the list, which prints the comment after it.</param>
     /// <returns>The document, with no line break before the first line or after the last.</returns>
-    public static Doc Print(IReadOnlyList<SyntaxNode> items, LeadingTrivia? closing = null)
+    public static Doc Print(IReadOnlyList<SyntaxNode> items, LeadingTrivia? closing = null, bool lastTrailingByAncestor = false)
     {
         var parts = new List<Doc>();
         for (int i = 0; i < items.Count; i++)
@@ -26,7 +27,7 @@ internal static class MemberList
                 }
             }
 
-            PrintedNode printed = NodePrinter.Print(items[i]);
+            PrintedNode printed = NodePrinter.Print(items[i], trailingByAncestor: lastTrailingByAncestor && i == items.Count - 1);
             parts.Add(TriviaPrinter.Leading(printed.Leading));
             parts.Add(printed.Doc);
             if (printed.TrailingComment is { } comment)
@@ -52,7 +53,7 @@ internal static class MemberList
         PropertyDeclarationSyntax property when IsAutoProperty(property) => MemberKind.AutoProperty,
         MethodDeclarationSyntax { Body: null, ExpressionBody: null } => MemberKind.Signature,
         EventFieldDeclarationSyntax => MemberKind.Event,
-        GlobalStatementSyntax => MemberKind.Statement,
+        GlobalStatementSyntax or StatementSyntax or SwitchSectionSyntax or AccessorDeclarationSyntax => MemberKind.Statement,
         _ => MemberKind.Other,
     };
 

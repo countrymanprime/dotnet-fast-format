@@ -21,12 +21,12 @@ public static class OutputVerifier
             return Fail(OutputInvariant.ValidOutput, $"Output has new diagnostic {newError}.");
         }
 
-        if (!Tokens(before).SequenceEqual(Tokens(after), StringComparer.Ordinal))
+        if (!SameTokens(before, after))
         {
             return Fail(OutputInvariant.TreePreserving, "Output tokens differ from input tokens.");
         }
 
-        if (!CodeAndComments(before).SequenceEqual(CodeAndComments(after), StringComparer.Ordinal))
+        if (!SameComments(before, after))
         {
             return Fail(OutputInvariant.NoLoss, "A comment or directive was dropped, changed or moved across code.");
         }
@@ -50,42 +50,99 @@ public static class OutputVerifier
         return null;
     }
 
-    private static Dictionary<string, int> CountErrors(SyntaxTree tree) =>
-        tree.GetDiagnostics()
+    private static Dictionary<string, int> CountErrors(SyntaxTree tree)
+    {
+        // A tree with no diagnostics at all (the usual case) needs no walk.
+        if (!tree.GetRoot().ContainsDiagnostics)
+        {
+            return [];
+        }
+
+        return tree.GetDiagnostics()
             .Where(d => d.Severity == DiagnosticSeverity.Error)
             .GroupBy(d => d.Id, StringComparer.Ordinal)
             .ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
+    }
 
-    private static IEnumerable<string> Tokens(SyntaxTree tree) =>
-        tree.GetRoot().DescendantTokens().Select(t => $"{t.Kind()}:{t.Text}");
+    /// <summary>Whether both trees hold the same tokens, by kind and text, in the same order. Allocates nothing per token.</summary>
+    private static bool SameTokens(SyntaxTree before, SyntaxTree after)
+    {
+        using IEnumerator<SyntaxToken> left = before.GetRoot().DescendantTokens().GetEnumerator();
+        using IEnumerator<SyntaxToken> right = after.GetRoot().DescendantTokens().GetEnumerator();
+        while (true)
+        {
+            bool hasLeft = left.MoveNext();
+            if (hasLeft != right.MoveNext())
+            {
+                return false;
+            }
+
+            if (!hasLeft)
+            {
+                return true;
+            }
+
+            if (left.Current.RawKind != right.Current.RawKind || !string.Equals(left.Current.Text, right.Current.Text, StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+    }
 
     /// <summary>
-    /// Code tokens and comment/directive trivia in source order, so a comment that moves across a token changes the
-    /// sequence. Each comment also records where it sits: on its own line above a token (<c>L</c>), on the same line
-    /// as the token that follows it (<c>I</c>), or after the token before it (<c>T</c>), so a comment that changes
-    /// owner while keeping its order is caught too. Lines of a comment are trimmed, so re-indenting is not a loss;
+    /// Whether the comments, documentation comments, directives and disabled text of both trees are the same, token by
+    /// token, so a comment that moves across a token or changes owner is a difference. The tokens are known to be equal.
+    /// Each comment also records where it sits: on its own line above a token (<c>L</c>), on the same line
+    /// as the token that follows it (<c>I</c>), or after the token before it (<c>T</c>). Lines of a comment are trimmed, so re-indenting is not a loss;
     /// line terminators are ignored, and the trivia's own line ending too. Disabled text is compared exactly,
     /// because it was never parsed and its whitespace can be part of a string.
     /// </summary>
-    private static IEnumerable<string> CodeAndComments(SyntaxTree tree)
+    private static bool SameComments(SyntaxTree before, SyntaxTree after)
     {
-        foreach (SyntaxToken token in tree.GetRoot().DescendantTokens())
+        using IEnumerator<SyntaxToken> left = before.GetRoot().DescendantTokens().GetEnumerator();
+        using IEnumerator<SyntaxToken> right = after.GetRoot().DescendantTokens().GetEnumerator();
+        while (left.MoveNext() && right.MoveNext())
         {
-            SyntaxTriviaList leading = token.LeadingTrivia;
-            for (int i = 0; i < leading.Count; i++)
+            if (!SameTrivia(left.Current.LeadingTrivia, right.Current.LeadingTrivia, leading: true)
+                || !SameTrivia(left.Current.TrailingTrivia, right.Current.TrailingTrivia, leading: false))
             {
-                if (IsPreserved(leading[i]))
-                {
-                    yield return Describe(leading[i], FollowsOnTheSameLine(leading, i) ? "I" : "L");
-                }
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool SameTrivia(SyntaxTriviaList x, SyntaxTriviaList y, bool leading)
+    {
+        int i = 0;
+        int j = 0;
+        while (true)
+        {
+            while (i < x.Count && !IsPreserved(x[i]))
+            {
+                i++;
             }
 
-            yield return $"{token.Kind()}:{token.Text}";
-
-            foreach (SyntaxTrivia trivia in token.TrailingTrivia.Where(IsPreserved))
+            while (j < y.Count && !IsPreserved(y[j]))
             {
-                yield return Describe(trivia, "T");
+                j++;
             }
+
+            if (i == x.Count || j == y.Count)
+            {
+                return i == x.Count && j == y.Count;
+            }
+
+            string left = Describe(x[i], leading ? (FollowsOnTheSameLine(x, i) ? "I" : "L") : "T");
+            string right = Describe(y[j], leading ? (FollowsOnTheSameLine(y, j) ? "I" : "L") : "T");
+            if (!string.Equals(left, right, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            i++;
+            j++;
         }
     }
 

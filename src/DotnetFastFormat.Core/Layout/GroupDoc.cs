@@ -8,10 +8,12 @@ internal sealed class GroupDoc : Doc
 {
     /// <summary>Initializes a new instance of the <see cref="GroupDoc"/> class.</summary>
     /// <param name="contents">The grouped document.</param>
-    public GroupDoc(Doc contents)
+    /// <param name="forceBreak">Whether the group is always broken, whatever its width.</param>
+    public GroupDoc(Doc contents, bool forceBreak = false)
     {
         Contents = contents;
-        ForcesBreak = contents.ForcesBreak;
+        ForcesBreak = forceBreak || contents.ForcesBreak;
+        WillBreak = forceBreak || contents.WillBreak;
     }
 
     /// <summary>Gets the grouped document.</summary>

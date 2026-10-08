@@ -4,6 +4,28 @@ Every change to what the formatter prints for the same input, newest first. A ch
 entry here ([AGENTS.md](../AGENTS.md)). Until a stable release, entries record what moved so a reader of a diff
 knows it was deliberate.
 
+## M2 (2026-10-05)
+
+Output that changed for files that already formatted in M3 (bodies, values and attributes used to be copied as written):
+
+- Method, constructor, accessor, lambda and top-level bodies are printed: Allman braces, four-space indent, one statement
+  per line, `if`/`for`/`while`/`foreach`/`using`/`lock`/`try`/`switch` with their bodies below, and expressions wrapped to
+  100 columns (see "Statements" and "Expressions" in [style.md](style.md)). A body that was written for another indent or
+  brace style moves; a one-line `if (x) return;` becomes two lines.
+- Initializer values and expression bodies of fields and properties are printed (a long value breaks after `=` or `=>`,
+  an initializer with braces goes Allman).
+- A property with accessor bodies prints its accessors one per line (it used to be copied).
+- Attribute lists are printed one per line above their member (`[A] [B] void M()` is two lines), also on types; attribute arguments
+  are spaced and wrapped like call arguments. Parameter attributes and any parameter default are printed (a list with
+  a default that was not a literal used to be copied).
+- Enums, delegates, events, indexers, operators and destructors are printed (they were copied).
+- A comment after an opening brace (`class C { // note`) stays after the brace on its line, and an `#if` between a header
+  and its `{` stays above the brace; both used to copy the declaration.
+- Multi-line string literals are measured to their first line break and no longer make the call around them break.
+
+Unchanged: string literals are never reflowed; patterns, query expressions, `stackalloc`, and a comment inside a statement
+(except above, after or before the `}` of one) are copied as written, as one expression or statement.
+
 ## M3 (2026-10-05)
 
 Output that changed for files that already formatted in M1:

@@ -9,6 +9,7 @@ internal sealed class IndentDoc : Doc
     {
         Contents = contents;
         ForcesBreak = contents.ForcesBreak;
+        WillBreak = contents.WillBreak;
     }
 
     /// <summary>Gets the indented document.</summary>

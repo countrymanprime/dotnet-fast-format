@@ -50,6 +50,42 @@ Risks: comment and trivia ownership (deferred to M3 by the verbatim fallback), s
 printer (T-101 tests it), and idempotency at the boundary between formatted and verbatim regions (every
 printer's fixtures include one).
 
+## M2: statements and expressions
+
+Goal: a method body is formatted. Blocks, statements, expressions and string literals have printers, so the
+statement lists inside methods, constructors, lambdas and top-level code are laid out to the width instead of being
+copied. Statement lists reuse the list machinery and the trivia model of M3
+([ADR 0010](decisions/0010-keep-comments-at-node-boundaries.md)): own-line comments and directives above a
+statement, a trailing comment after it, closing lines before `}`. Anything without a printer is copied per statement or
+per expression, never per file ([ADR 0008](decisions/0008-print-unsupported-syntax-verbatim.md),
+[ADR 0014](decisions/0014-statements-and-expressions-reuse-the-trivia-model.md)). Layout rules are in
+[ADR 0013](decisions/0013-lay-out-statements-and-expressions-with-groups.md) and `docs/style.md`. Tokens are never
+added or removed, so braces, parentheses and commas stay as written. The four invariants hold on every fixture, on
+comments inserted into this repository's files, and on the corpus, and the formatter stays within 1.5 times
+CSharpier's time ([ADR 0006](decisions/0006-formatting-speed-baseline.md)).
+
+One branch, one commit per task. Each fixture is written from `docs/style.md`, the received output is reviewed
+against the rule, and only then accepted.
+
+| ID | Task | Requirements | Files | Acceptance | Verify |
+|---|---|---|---|---|---|
+| T-200 | Decide the layout and the trivia ownership of statements and expressions: ADRs 0013 and 0014; add the M2 requirements | FMT-006, FMT-020 to FMT-030 | `docs/decisions/`, `docs/requirements/core.md` | Both ADRs Accepted (provisional) | done under delegation; the author's review is pending |
+| T-201 | Doc printer: a group that always breaks, and a conditional group that tries a list of layouts in order (for "hug the last argument") | none (internal) | `src/DotnetFastFormat.Core/Layout/`, `tests/DotnetFastFormat.Tests/Layout/` | A conditional group picks the first layout that fits (a layout with a forced break fits when the text before the break fits) and falls back to the last one broken; 10,000 nested ones do not overflow the stack | `dotnet test -- --filter-class "*DocPrinter*"` (done) |
+| T-202 | Statement lists: block, expression statement, local declaration, `return`, `throw`, `yield`, `break`, `continue`, empty statement; bodies of methods, constructors and top-level statements use them; expressions still copied | FMT-020, FMT-029 | `src/DotnetFastFormat.Core/Printers/`, `tests/golden/statements/` | Fixtures `statements/blocks`, `statements/simple`, `statements/comments` pass, including a comment above, after and before `}` of a statement, a comment inside a statement (that statement copied, its neighbours formatted) and `#if` around statements | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-203 | Invocations, member access, element access, argument lists that wrap at the width, member chains, hugging a last-argument lambda | FMT-024, FMT-025, FMT-026 | `src/DotnetFastFormat.Core/Printers/` | Fixtures `expressions/invocations`, `expressions/chains`, `expressions/lambda-arguments` pass | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-204 | Object, array and collection creation, initializers, anonymous objects, tuples, `with`; the trailing comma that forces a break | FMT-027, FMT-030 | `src/DotnetFastFormat.Core/Printers/` | Fixtures `expressions/creation`, `expressions/initializers` pass | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-205 | Binary and logical, conditional, assignment, unary, cast, `await`, parenthesized, `typeof`, `default`, `throw` expressions, lambdas; assignment layout for declarators, field and property initializers and expression bodies | FMT-024, FMT-028 | `src/DotnetFastFormat.Core/Printers/` | Fixtures `expressions/operators`, `expressions/assignments`, `expressions/lambdas` pass | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-206 | Embedded statements (a body that is not a block, and the last token it shares with its parent), `if` with `else` and `else if` chains, `for`, `foreach`, `while`, `do` | FMT-021, FMT-022 | `src/DotnetFastFormat.Core/Printers/` | Fixtures `statements/if`, `statements/loops` pass, including comments between `}` and `else` (the `if` copied) | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-207 | `using`, `lock`, `try`/`catch`/`finally`, `switch` statements | FMT-023 | `src/DotnetFastFormat.Core/Printers/` | Fixtures `statements/using-lock`, `statements/try`, `statements/switch` pass | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-208 | String literals: regular, verbatim, interpolated and raw are never reflowed, in every position | FMT-006 | `src/DotnetFastFormat.Core/Printers/`, `tests/golden/strings/` | Fixtures `strings/*` pass: a multi-line verbatim and raw string as an argument, an initializer and a return value, with and without width pressure | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-209 | Members use the new printers: attributes on members, expression bodies, initializer values, constructor initializers, local functions | FMT-020, FMT-024 | `src/DotnetFastFormat.Core/Printers/` | Fixtures `members/*` updated; `members/attributes`, `statements/local-functions` pass | `dotnet test -- --filter-class "*Golden*"` (done) |
+| T-211 | Copy less: attribute lists and parameter attributes and defaults, directives and comments around attribute lists and opening braces, enums, delegates, events, indexers, operators and destructors; measure the share of the corpus still copied as written | FMT-020, FMT-029 | `src/DotnetFastFormat.Core/Printers/`, `tests/DotnetFastFormat.Tests/Corpus/` | Fixtures `members/attributes*`, `members/other-members` pass; `CorpusVerbatimShareTests` writes `.bench/verbatim-share.md` and guards against a collapse | `dotnet test -- --filter-class "*Golden*"` and `dotnet test -p:TestTier=slow -- --filter-class "*CorpusVerbatimShare*"` (done) |
+| T-212 | Verification: the repository and mutation tests, the corpus run, a verbatim counter, the benchmark row, docs (`style.md`, style changelog, architecture, AGENTS.md status) | FMT-001 to FMT-003, PERF-004 | `docs/`, `tests/` | `-p:TestTier=slow` passes with no crash and 100% idempotency and tree equivalence; the ratio is recorded in ADR 0006 | `dotnet test -p:TestTier=slow` and the benchmark command (done: corpus format and mutation tests pass on all six repositories; 0.58 times CSharpier, see ADR 0006; 2.4 percent of the corpus is still copied code) |
+
+Risks: a comment position inside a statement that makes a large statement fall back (the verbatim share in the
+corpus is measured in T-212); the output check blocking a file because a printer dropped or moved a token; formatting
+cost growing past the 1.5 times target; layouts that differ from other tools, which is a style choice and not a bug.
+
 ## M3: comments and the preprocessor
 
 Goal: a file with comments and `#if` blocks is formatted instead of copied: own-line comments, end-of-line
@@ -78,7 +114,7 @@ unformatted and exits 2); hidden dependence on the no-symbols parse; `#line` aft
 
 | Milestone | Scope |
 |---|---|
-| M2 | Statements, expressions, string literals |
+| M2 | Statements, expressions, string literals: done, see above |
 | M3 | Comments and trivia; preprocessor strategy decided (ADR): planned above |
 | M4 | `.editorconfig` resolution and the first supported keys; BOM and line endings |
 | M5 | Parallelism, cache, benchmarks and the performance gate |
